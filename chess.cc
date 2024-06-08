@@ -2,8 +2,37 @@
 #include <string>
 #include "chess.h"
 
-Chess::Chess() {
+int Chess::moveIndex(string a) {
+    if (a.length() > 2) return -1;
+    if (a[0] < 'a' || a[1] > 'h') return -1;
+    if (a[1] < '1' || a[1] > '8') return -1;
+
+    return 8*(a[0] - 'a') + a[1] - '1';
+}
+
+Chess::Chess(): colorToMove{1} {
     memset(board, 0, sizeof(board));
+}
+
+bool Chess::playMove(string start, string target) {
+    //Check if move is in list of valid moves
+    int startIndex = moveIndex(start), targetIndex = moveIndex(target);
+
+    bool validMove = false;
+
+    for (auto i : validMoves) {
+        if (startIndex == i.start && targetIndex == i.target) {
+            validMove = true;
+            break;
+        }
+    }
+
+    if (!validMove) return false;
+    
+
+
+
+
 }
 
 
