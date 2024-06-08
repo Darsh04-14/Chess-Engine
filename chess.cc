@@ -18,5 +18,5 @@ void Chess::print() {
         }
         cout << endl;
     }
-    cout << "  a b c d e f g h\n";
+    cout << "  abcdefgh\n";
 }
