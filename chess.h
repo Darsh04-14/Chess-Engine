@@ -30,7 +30,11 @@ class Chess {
 
     vector<Move> validMoves;// valid moves from start to end square 0 - 63
 
+    void kingMoves(int);
     void pawnMove(int); // parameter is start of square where pawn is 
+    void knightMove(int);
+    void castleMove();
+
     void diagonalMove(int);
     void horizontalVerticalMoves(int);
     void generateMoves();

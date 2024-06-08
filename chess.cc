@@ -14,6 +14,30 @@ Chess::Chess(): colorToMove{(1 << 7)} {
     memset(board, 0, sizeof(board));
 }
 
+void Chess::kingMoves(int startIndex) {
+    int startRow = startIndex / 8;
+    int startCol = startIndex % 8;
+    int directions[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
+
+    int kingColor = board[startRow][startCol] & (White | Black);
+
+    for (int i = 0; i < 8; ++i) {
+        int newRow = startRow + directions[i][0];
+        int newCol = startCol + directions[i][1];
+
+        
+        if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            int targetIndex = newRow * 8 + newCol;
+            int targetPiece = board[newRow][newCol];
+            int targetColor = targetPiece & (White | Black);
+        // add check functoins
+            if (targetPiece == None || (targetColor != kingColor)) {
+                validMoves.push_back({startIndex, targetIndex, targetPiece == None ? -1 : targetIndex});
+            }
+        }
+    }
+}
+
 void Chess::pawnMove(int startIndex) {
     int row = startIndex / 8;
     int col = startIndex % 8;
@@ -87,6 +111,28 @@ void Chess::pawnMove(int startIndex) {
     }
 }
 
+void Chess::knightMove(int startIndex) {
+    cout << "Gen knight moves, for index " << startIndex << "\n";
+    for (int i = 0; i < 4; i++) {
+        int a = (i&1 ? -1 : 1)*8, b = (i&2 ? -1 : 1)*2;
+        int row = (startIndex + a)/8, col = (startIndex + b)%8;
+        if (row >= 0 && row < 8 && col >= 0 && col < 8) {
+            if (board[row][col] == None) validMoves.push_back({startIndex, row*8+col, -1});
+            else if (!(board[row][col] & colorToMove)) validMoves.push_back({startIndex, row*8+col, row*8+col});
+        }
+    }
+
+    for (int i = 0; i < 4; i++) {
+        int a = (i&1 ? -1 : 1)*16, b = (i&2 ? -1 : 1);
+        int row = (startIndex + a)/8, col = (startIndex + b)%8;
+        cout << row << " " << col << '\n';
+        if (row >= 0 && row < 8 && col >= 0 && col < 8) {
+            if (board[row][col] == None) validMoves.push_back({startIndex, row*8+col, -1});
+            else if (!(board[row][col] & colorToMove)) validMoves.push_back({startIndex, row*8+col, row*8+col});
+        }
+    }
+}
+
 void Chess::horizontalVerticalMoves(int startIndex){
     int row = startIndex/8;
     int col = startIndex%8;
@@ -143,8 +189,6 @@ void Chess::horizontalVerticalMoves(int startIndex){
         }
     }
 
-
-
 }
 
 
@@ -180,7 +224,8 @@ void Chess::generateMoves() {
             else if (board[i][j] == (colorToMove | Queen)) {
                 diagonalMove(i*8+j);
                 horizontalVerticalMoves(i*8+j);
-            } else if (board[i][j] == (colorToMove | Rook)) horizontalVerticalMoves(i*8+j); 
+            } else if (board[i][j] == (colorToMove | Rook)) horizontalVerticalMoves(i*8+j);
+            else if (board[i][j] == (colorToMove | Knight)) knightMove(i*8+j); 
         }
     }
 }
