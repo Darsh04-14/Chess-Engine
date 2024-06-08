@@ -11,7 +11,7 @@ class Chess {
     const int King = 75;
     const int Queen = 81;
     const int Knight = 78;
-    const int Bishop = 88;
+    const int Bishop = 66;
     const int Rook = 82;
     const int Pawn = 80;
 
@@ -21,6 +21,6 @@ class Chess {
     int board[8][8];
 public:
     Chess();
-
+    Chess(string inputed);
     void print();
 };

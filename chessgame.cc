@@ -4,6 +4,6 @@
 // g++ -o chess -std=c++17 chess.cc chessgame.cc
 
 int main() {
-    Chess game;
+    Chess game("");
     game.print();
 }
