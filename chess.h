@@ -25,20 +25,20 @@ class Chess {
     };
 
     int board[8][8];
-    bool colorToMove;
+    int colorToMove;
 
     vector<Move> validMoves;// valid moves from start to end square 0 - 63
 
+    void pawnMove(int); // parameter is start of square where pawn is 
     void generateMoves();
 
-    int moveIndex(string a);
+    int moveIndex(string);
 
 public:
     Chess();
-    Chess(string inputed);
+    Chess(string);
 
     bool playMove(string, string);// start and end for entering
-    void pawnMove(string); // parameter is start of square where pawn is 
 
     void print();
 };

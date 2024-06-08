@@ -7,32 +7,14 @@ int Chess::moveIndex(string a) {
     if (a[0] < 'a' || a[1] > 'h') return -1;
     if (a[1] < '1' || a[1] > '8') return -1;
 
-    return 8*(a[0] - 'a') + a[1] - '1';
+    return a[0] - 'a' + 8*(a[1] - '1');
 }
 
-Chess::Chess(): colorToMove{1} {
+Chess::Chess(): colorToMove{(1 << 7)} {
     memset(board, 0, sizeof(board));
 }
 
-bool Chess::playMove(string start, string target) {
-    //Check if move is in list of valid moves
-    int startIndex = moveIndex(start), targetIndex = moveIndex(target);
-
-    bool validMove = false;
-
-    for (auto i : validMoves) {
-        if (startIndex == i.start && targetIndex == i.target) {
-            validMove = true;
-            break;
-        }
-    }
-
-    if (!validMove) return false;
-
-}
-
-void Chess::pawnMove(string start) {
-    int startIndex = moveIndex(start);
+void Chess::pawnMove(int startIndex) {
     int row = startIndex / 8;
     int col = startIndex % 8;
     
@@ -86,48 +68,89 @@ void Chess::pawnMove(string start) {
     }
 }
 
+void Chess::generateMoves() {
+    for (int i = 0; i < 8; ++i) {
+        for (int j = 0; j < 8; ++j) {
+            if (board[i][j] ==  (colorToMove | Pawn)) {
+                pawnMove(i*8+j);
+            }
+        }
+    }
+}
 
-Chess::Chess(string inputed){
+bool Chess::playMove(string start, string target) {
+    //Check if move is in list of valid moves
+    generateMoves();
+
+    int startIndex = moveIndex(start), targetIndex = moveIndex(target);
+
+    cout << startIndex << " " << targetIndex << "\n";
+    bool validMove = false;
+
+    cout << "Valid moves: ";
+    for (auto i : validMoves) {
+        cout << "(" << i.start << ", " << i.target << ") ";
+        if (startIndex == i.start && targetIndex == i.target) {
+            validMove = true;
+            break;
+        }
+    }
+    cout << "\n";
+
+    if (!validMove || startIndex < 0 || targetIndex < 0) return false;
+
+    int piece = board[startIndex/8][startIndex%8];
+    board[startIndex/8][startIndex%8] = None;
+    board[targetIndex/8][targetIndex%8] = piece;
+
+    validMoves.clear();
+    colorToMove ^= ((3 << 7));
+
+    return true;
+
+}
+
+Chess::Chess(string inputed): colorToMove{1 << 7} {
     memset(board, 0, sizeof(board));
-if(inputed == ""){ // does default game setup
+    if(inputed == ""){ // does default game setup
 
-// setup for white
-board[7][0] = Rook | White;
-board[7][1] = Knight | White;
-board[7][2] = Bishop | White;
-board[7][3] = Queen | White;
-board[7][4] = King | White;
-board[7][5] = Bishop | White;
-board[7][6] = Knight | White;
-board[7][7] = Rook | White;
-for (int j = 0; j < 8; ++j) {
-    board[6][j] = Pawn | White;
-}
+        // setup for white
+        board[0][0] = Rook | White;
+        board[0][1] = Knight | White;
+        board[0][2] = Bishop | White;
+        board[0][3] = Queen | White;
+        board[0][4] = King | White;
+        board[0][5] = Bishop | White;
+        board[0][6] = Knight | White;
+        board[0][7] = Rook | White;
+        for (int j = 0; j < 8; ++j) {
+            board[1][j] = Pawn | White;
+        }
 
-//for black 
-board[0][0] = Rook | Black;
-board[0][1] = Knight | Black;
-board[0][2] = Bishop | Black;
-board[0][3] = Queen | Black;
-board[0][4] = King | Black;
-board[0][5] = Bishop | Black;
-board[0][6] = Knight | Black;
-board[0][7] = Rook | Black;
-for (int j = 0; j < 8; ++j) {
-    board[1][j] = Pawn | Black;
-}
+        //for black 
+        board[7][0] = Rook | Black;
+        board[7][1] = Knight | Black;
+        board[7][2] = Bishop | Black;
+        board[7][3] = Queen | Black;
+        board[7][4] = King | Black;
+        board[7][5] = Bishop | Black;
+        board[7][6] = Knight | Black;
+        board[7][7] = Rook | Black;
+        for (int j = 0; j < 8; ++j) {
+            board[6][j] = Pawn | Black;
+        }
 
 
 
-   
-}else{
-    // do customized
-}
+    
+    }else{
+        // do customized
+    }
 }
 
 void Chess::print() { 
-    for (int row = 0; row < 8; ++row) {
-        cout << 8 - row << ' ';
+    for (int row = 7; row >= 0; --row) {
+        cout << row + 1 << ' ';
         for (int col = 0; col < 8; ++col) {
             int Piece = board[row][col];
             if (Piece == None) cout << ((row + col)%2 ? '-' : ' ');
