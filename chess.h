@@ -20,14 +20,14 @@ class Chess {
     const int Black = (1 << 8);
 
     struct Move {
-        int start;
-        int target;
+        int start; // start square
+        int target; // final square
     };
 
     int board[8][8];
     bool colorToMove;
 
-    vector<Move> validMoves;
+    vector<Move> validMoves;// valid moves from start to end square 0 - 63
 
     void generateMoves();
 
@@ -37,7 +37,8 @@ public:
     Chess();
     Chess(string inputed);
 
-    bool playMove(string, string);
+    bool playMove(string, string);// start and end for entering
+    void pawnMove(string); // parameter is start of square where pawn is 
 
     void print();
 };

@@ -28,11 +28,62 @@ bool Chess::playMove(string start, string target) {
     }
 
     if (!validMove) return false;
+
+}
+
+void Chess::pawnMove(string start) {
+    int startIndex = moveIndex(start);
+    int row = startIndex / 8;
+    int col = startIndex % 8;
     
+    if (board[row][col] == (Pawn | White)) {// white pawn
+        if (row == 1) { // if intial postion
+            validMoves.push_back({startIndex, startIndex + 8}); //move one 
+            validMoves.push_back({startIndex, startIndex + 16}); // move two
+        } else {
+            validMoves.push_back({startIndex, startIndex + 8}); // move one if anywhere else
+        }
 
+        // en pasant
+        if (row == 4) { // enpasant for white only on row 5
+            // left capture check
+            if (col > 0 && board[row][col - 1] == (Pawn | Black)) {
+                if (board[row + 1][col - 1] == None) {
+                    validMoves.push_back({startIndex, startIndex + 7});
+                }
+            }
+            // right capture check
+            if (col < 7 && board[row][col + 1] == (Pawn | Black)) {
+                if (board[row + 1][col + 1] == None) {
+                    validMoves.push_back({startIndex, startIndex + 9});
+                }
+            }
+        }
+    } else if (board[row][col] == (Pawn | Black)) {
+        // black pawn
+        if (row == 6) { // black pawn start
+            validMoves.push_back({startIndex, startIndex - 8}); // move forward one
+            validMoves.push_back({startIndex, startIndex - 16}); // move forward two
+        } else {
+            validMoves.push_back({startIndex, startIndex - 8}); // move forware one if anywhere else
+        }
 
-
-
+        // en pasant black
+        if (row == 4) { // black can only enpasant on row 4 (0 indexed)
+            //  left capture check
+            if (col > 0 && board[row][col - 1] == (Pawn | White)) {
+                if (board[row - 1][col - 1] == None) {
+                    validMoves.push_back({startIndex, startIndex - 9});
+                }
+            }
+            // right capture check
+            if (col < 7 && board[row][col + 1] == (Pawn | White)) {
+                if (board[row - 1][col + 1] == None) {
+                    validMoves.push_back({startIndex, startIndex - 7});
+                }
+            }
+        }
+    }
 }
 
 
