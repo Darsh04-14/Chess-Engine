@@ -20,10 +20,10 @@ void Chess::pawnMove(int startIndex) {
     
     if (board[row][col] == (Pawn | White)) {// white pawn
         if (row == 1) { // if intial postion
-            validMoves.push_back({startIndex, startIndex + 8}); //move one 
-            validMoves.push_back({startIndex, startIndex + 16}); // move two
+            validMoves.push_back({startIndex, startIndex + 8, false}); //move one 
+            validMoves.push_back({startIndex, startIndex + 16, false}); // move two
         } else {
-            validMoves.push_back({startIndex, startIndex + 8}); // move one if anywhere else
+            validMoves.push_back({startIndex, startIndex + 8, false}); // move one if anywhere else
         }
 
         // en pasant
@@ -31,23 +31,37 @@ void Chess::pawnMove(int startIndex) {
             // left capture check
             if (col > 0 && board[row][col - 1] == (Pawn | Black)) {
                 if (board[row + 1][col - 1] == None) {
-                    validMoves.push_back({startIndex, startIndex + 7});
+                    validMoves.push_back({startIndex, startIndex + 7, true});
                 }
             }
             // right capture check
             if (col < 7 && board[row][col + 1] == (Pawn | Black)) {
                 if (board[row + 1][col + 1] == None) {
-                    validMoves.push_back({startIndex, startIndex + 9});
+                    validMoves.push_back({startIndex, startIndex + 9, true});
                 }
             }
         }
+         // left capture check no enpasant - reguaar
+            if (col > 0 && board[row][col - 1] == (Pawn | Black)) {
+                if (board[row + 1][col - 1] == None) {
+                    validMoves.push_back({startIndex, startIndex + 7, true});
+                }
+            }
+            // right capture check no enpasant - regular
+            if (col < 7 && board[row][col + 1] == (Pawn | Black)) {
+                if (board[row + 1][col + 1] == None) {
+                    validMoves.push_back({startIndex, startIndex + 9, true});
+                }
+            }
+
+
     } else if (board[row][col] == (Pawn | Black)) {
         // black pawn
         if (row == 6) { // black pawn start
-            validMoves.push_back({startIndex, startIndex - 8}); // move forward one
-            validMoves.push_back({startIndex, startIndex - 16}); // move forward two
+            validMoves.push_back({startIndex, startIndex - 8, false}); // move forward one
+            validMoves.push_back({startIndex, startIndex - 16, false}); // move forward two
         } else {
-            validMoves.push_back({startIndex, startIndex - 8}); // move forware one if anywhere else
+            validMoves.push_back({startIndex, startIndex - 8, false}); // move forware one if anywhere else
         }
 
         // en pasant black
@@ -55,16 +69,29 @@ void Chess::pawnMove(int startIndex) {
             //  left capture check
             if (col > 0 && board[row][col - 1] == (Pawn | White)) {
                 if (board[row - 1][col - 1] == None) {
-                    validMoves.push_back({startIndex, startIndex - 9});
+                    validMoves.push_back({startIndex, startIndex - 9, true});
                 }
             }
             // right capture check
             if (col < 7 && board[row][col + 1] == (Pawn | White)) {
                 if (board[row - 1][col + 1] == None) {
-                    validMoves.push_back({startIndex, startIndex - 7});
+                    validMoves.push_back({startIndex, startIndex - 7, true});
                 }
             }
         }
+
+             // left capture check no unpeasnt - regualr capture
+            if (col > 0 && board[row][col - 1] == (Pawn | White)) {
+                if (board[row - 1][col - 1] == None) {
+                    validMoves.push_back({startIndex, startIndex - 9, true});
+                }
+            }
+            // right capture check  no unpeasnt - regualr capture
+            if (col < 7 && board[row][col + 1] == (Pawn | White)) {
+                if (board[row - 1][col + 1] == None) {
+                    validMoves.push_back({startIndex, startIndex - 7, true});
+                }
+            }
     }
 }
 

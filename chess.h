@@ -22,6 +22,7 @@ class Chess {
     struct Move {
         int start; // start square
         int target; // final square
+        bool isCapture; // see if opposite coloure peice available for capture
     };
 
     int board[8][8];
