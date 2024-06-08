@@ -38,6 +38,23 @@ void Chess::kingMoves(int startIndex) {
     }
 }
 
+void Chess::castleMove() {
+    //Need to check if king or rook has moved previosly and blocking checks
+    int row = colorToMove == White ? 0 : 7;
+    if (board[row][4] == (colorToMove | King)) {
+        bool leftCastle = true, rightCastle = true;
+        for (int i = 3; i > 0; --i)
+            if (board[row][i] != None) leftCastle = false;
+        for (int i = 5; i < 7; ++i)
+            if (board[row][i] != None) rightCastle = false;
+        
+        if (leftCastle && board[row][0] == (colorToMove | Rook))
+            validMoves.push_back({row*8 + 4, row*8 + 2, -2});
+        if (rightCastle && board[row][7] == (colorToMove | Rook))
+            validMoves.push_back({row*8 + 4, row*8 + 6, -2});
+    }
+}
+
 void Chess::pawnMove(int startIndex) {
     int row = startIndex / 8;
     int col = startIndex % 8;
@@ -216,7 +233,51 @@ void Chess::diagonalMove(int startIndex) {
     }
 }
 
+void Chess::pawnPromotions(int startIndex) {
+    int row = startIndex / 8;
+    int col = startIndex % 8;
+    int pawnPiece = board[row][col];
+    int pawnColor = pawnPiece & (White|Black);
+    cout << row << " " << col << endl;
+    cout << pawnColor << endl;
+
+    if ((pawnColor == White && row == 7) || (pawnColor == Black && row == 0)) {
+        cout << "pawn has reached end! Enter a promotion: ";
+        char choice;
+        cin >> choice;
+        int newPiece = pawnPiece; 
+
+        
+        if (tolower(choice) == 'q') {
+            newPiece = Queen | pawnColor;
+            cout << "Pawn promoted on to Queen.\n";
+        }
+
+        else if (tolower(choice) == 'r') {
+            newPiece = Rook | pawnColor;
+            std::cout << "Pawn promoted on to Rook.\n";
+        }
+    
+        else if (tolower(choice) == 'b') {
+            newPiece = Bishop | pawnColor;
+            std::cout << "Pawn promoted on to Bishop.\n";
+        }
+
+        else if (tolower(choice) == 'n') {
+            newPiece = Knight | pawnColor;
+            std::cout << "Pawn promoted on to Knight.\n";
+        }
+
+        // update the board with the new piece
+        board[row][col] = newPiece;
+    } else {
+        // else keep pawn to pawn if no selection matches
+        cout << "no pawn promotion needed.\n";
+    }
+}
+
 void Chess::generateMoves() {
+    castleMove();
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
             if (board[i][j] ==  (colorToMove | Pawn)) pawnMove(i*8+j);
@@ -245,12 +306,23 @@ bool Chess::playMove(string start, string target) {
 
             if (i.isCapture != -1)
                 board[i.isCapture/8][i.isCapture%8] = None;
+            
+
 
             int piece = board[startIndex/8][startIndex%8];
 
             board[startIndex/8][startIndex%8] = None;
             board[targetIndex/8][targetIndex%8] = piece;
 
+            // Is a castling move, so put rook in appropriate position
+            if (i.isCapture == -2) {
+                if (targetIndex%8 > 4)
+                    swap(board[targetIndex/8][targetIndex%8 - 1], board[targetIndex/8][7]);
+                else
+                    swap(board[targetIndex/8][targetIndex%8 + 1], board[targetIndex/8][0]);
+            }
+
+            pawnPromotions(targetIndex);
             validMoves.clear();
             colorToMove ^= ((3 << 7));
             cout << "\n";

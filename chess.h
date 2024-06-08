@@ -34,6 +34,7 @@ class Chess {
     void pawnMove(int); // parameter is start of square where pawn is 
     void knightMove(int);
     void castleMove();
+    void pawnPromotions(int);
 
     void diagonalMove(int);
     void horizontalVerticalMoves(int);
