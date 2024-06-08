@@ -31,6 +31,8 @@ class Chess {
     vector<Move> validMoves;// valid moves from start to end square 0 - 63
 
     void pawnMove(int); // parameter is start of square where pawn is 
+    void diagonalMove(int);
+    void horizontalVerticalMoves(int);
     void generateMoves();
 
     int moveIndex(string);

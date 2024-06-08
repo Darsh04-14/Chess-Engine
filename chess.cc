@@ -4,7 +4,7 @@
 
 int Chess::moveIndex(string a) {
     if (a.length() != 2) return -1;
-    if (a[0] < 'a' || a[1] > 'h') return -1;
+    if (a[0] < 'a' || a[0] > 'h') return -1;
     if (a[1] < '1' || a[1] > '8') return -1;
 
     return a[0] - 'a' + 8*(a[1] - '1');
@@ -87,12 +87,103 @@ void Chess::pawnMove(int startIndex) {
     }
 }
 
+void Chess::horizontalVerticalMoves(int startIndex){
+    int row = startIndex/8;
+    int col = startIndex%8;
+    int color = board[row][col] & (White | Black);
+
+
+    //horizontal to the right
+    for(int i = col + 1; i < 8; ++i){
+        if(board[row][i] == None){
+            validMoves.push_back({startIndex, row*8 + i, -1}); // move if nothing in path
+        }else{
+            if((board[row][i] & (White | Black)) != color){
+                validMoves.push_back({startIndex, row*8 +i, i*8 + col}); //capture if opposite colour in path
+            }
+            break; //leave if peice in way
+        }
+    }
+
+    //horizontal to the left
+     for(int i = col - 1; i >= 0; --i){
+        if(board[row][i] == None){
+            validMoves.push_back({startIndex, row*8 + i, -1}); // move if nothing in path
+        }else{
+            if((board[row][i] & (White | Black)) != color){
+                validMoves.push_back({startIndex, row*8 +i, i*8 + col}); //capture if opposite colour in path
+            }
+            break; //leave if peice in way
+        }
+    }
+
+    //vertical upwards
+    for(int i = row + 1; i < 8; ++i){
+        if(board[i][col] == None){
+            validMoves.push_back({startIndex, i*8 + col, -1}); // go up all the way
+            cout << "(" << startIndex <<  "," << i*8+col<< ")" << endl;
+        }else{
+            if((board[i][col] & (White | Black)) != color){
+                validMoves.push_back({startIndex, i*8 + col, i*8 + col}); // capture if opp color
+            }
+            break; // stop gen if in way
+        }
+    }
+
+    //vertical downwards
+    for(int i = row - 1; i >= 0; --i){
+        if(board[i][col] == None){
+            validMoves.push_back({startIndex, i*8 + col, -1}); // go up all the way
+            
+        }else{
+            if((board[i][col] & (White | Black)) != color){
+                validMoves.push_back({startIndex, i*8 + col, i*8 + col}); // capture if opp color
+            }
+            break; // stop gen if in way
+        }
+    }
+
+
+
+}
+
+
+void Chess::diagonalMove(int startIndex) {
+    int notCovered = (1 << 4) - 1, r = 1;
+    while (notCovered) {
+        for (int i = 0; i < 4; i++) {
+            int d = (1 << i);
+            if (!(notCovered&d)) continue;
+
+            int f = (i > 1) ? 2*(i%2) - 9 : 9 - 2*(i%2), t = startIndex + r*f;
+            int row = t/8, col = t%8;
+            if (row >= 0 && row < 8 && col >= 0 && col < 8) {
+                if (board[row][col] == None) validMoves.push_back({startIndex, t, -1});
+                else {
+                    if (t == 54) {
+                        cout << "Special case: " << board[row][col] << " " << colorToMove << " " << (board[row][col] | colorToMove) << "\n";
+                    }
+                    if (!(board[row][col] & colorToMove)) validMoves.push_back({startIndex, t, t});
+                    notCovered ^= d;  
+                }
+            } else {
+                notCovered ^= d;
+            }
+        }
+
+        r++;
+    }
+}
+
 void Chess::generateMoves() {
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
-            if (board[i][j] ==  (colorToMove | Pawn)) {
-                pawnMove(i*8+j);
-            }
+            if (board[i][j] ==  (colorToMove | Pawn)) pawnMove(i*8+j);
+            else if (board[i][j] == (colorToMove | Bishop)) diagonalMove(i*8+j);
+            else if (board[i][j] == (colorToMove | Queen)) {
+                diagonalMove(i*8+j);
+                horizontalVerticalMoves(i*8+j);
+            } else if (board[i][j] == (colorToMove | Rook)) horizontalVerticalMoves(i*8+j); 
         }
     }
 }
@@ -105,9 +196,9 @@ bool Chess::playMove(string start, string target) {
 
     // cout << startIndex << " " << targetIndex << "\n";
 
-    // cout << "Valid moves: ";
+    cout << "Valid moves: ";
     for (auto i : validMoves) {
-        // cout << "(" << i.start << ", " << i.target << ") ";
+        cout << "(" << i.start << ", " << i.target << ") ";
         if (startIndex == i.start && targetIndex == i.target) {
 
             if (i.isCapture != -1)
@@ -120,11 +211,12 @@ bool Chess::playMove(string start, string target) {
 
             validMoves.clear();
             colorToMove ^= ((3 << 7));
+            cout << "\n";
 
             return true;
         }
     }
-    // cout << "\n";
+    cout << "\n";
 
     return false;
 
