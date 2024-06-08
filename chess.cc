@@ -160,9 +160,6 @@ void Chess::diagonalMove(int startIndex) {
             if (row >= 0 && row < 8 && col >= 0 && col < 8) {
                 if (board[row][col] == None) validMoves.push_back({startIndex, t, -1});
                 else {
-                    if (t == 54) {
-                        cout << "Special case: " << board[row][col] << " " << colorToMove << " " << (board[row][col] | colorToMove) << "\n";
-                    }
                     if (!(board[row][col] & colorToMove)) validMoves.push_back({startIndex, t, t});
                     notCovered ^= d;  
                 }
