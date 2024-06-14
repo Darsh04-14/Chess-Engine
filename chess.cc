@@ -30,7 +30,6 @@ void Chess::kingMoves(int startIndex) {
             int targetIndex = newRow * 8 + newCol;
             int targetPiece = board[newRow][newCol];
             int targetColor = targetPiece & (White | Black);
-        // add check functoins
             if (targetPiece == None || (targetColor != kingColor)) {
                 validMoves.push_back({startIndex, targetIndex, targetPiece == None ? -1 : targetIndex});
             }
@@ -58,75 +57,65 @@ void Chess::castleMove() {
 void Chess::pawnMove(int startIndex) {
     int row = startIndex / 8;
     int col = startIndex % 8;
-    
-    if (board[row][col] == (Pawn | White)) {// white pawn
-        if (row == 1) { // if intial postion
-            validMoves.push_back({startIndex, startIndex + 8, -1}); //move one 
-            validMoves.push_back({startIndex, startIndex + 16, -1}); // move two
+
+    if (board[row][col] == (Pawn | White)) { // white pawn
+        if (row == 1) { // initial position
+            if (board[row + 1][col] == None) validMoves.push_back({startIndex, startIndex + 8, -1}); // move one
+            if (board[row + 2][col] == None) validMoves.push_back({startIndex, startIndex + 16, -1}); // move two
         } else {
-            validMoves.push_back({startIndex, startIndex + 8, -1}); // move one if anywhere else
+            if (board[row + 1][col] == None) validMoves.push_back({startIndex, startIndex + 8, -1}); // move one
         }
 
-        // en pasant
-        if (row == 4) { // enpasant for white only on row 5
+        // en passant
+        if (row == 4) { // en passant for white only on row 5
             // left capture check
-            if (col > 0 && board[row][col - 1] == (Pawn | Black)) {
-                if (board[row + 1][col - 1] == None) {
-                    validMoves.push_back({startIndex, startIndex + 7, startIndex - 1});
-                }
+            if (col > 0 && board[row][col - 1] == (Pawn | Black) && board[row + 1][col - 1] == None) {
+                validMoves.push_back({startIndex, startIndex + 7, startIndex - 1});
             }
             // right capture check
-            if (col < 7 && board[row][col + 1] == (Pawn | Black)) {
-                if (board[row + 1][col + 1] == None) {
-                    validMoves.push_back({startIndex, startIndex + 9, startIndex + 1});
-                }
+            if (col < 7 && board[row][col + 1] == (Pawn | Black) && board[row + 1][col + 1] == None) {
+                validMoves.push_back({startIndex, startIndex + 9, startIndex + 1});
             }
         }
-         // left capture check no enpasant - reguaar
-            if (col > 0 && board[row + 1][col - 1] == (Pawn | Black)) {
-                validMoves.push_back({startIndex, startIndex + 7, startIndex + 7});
-            }
-            // right capture check no enpasant - regular
-            if (col < 7 && board[row + 1][col + 1] == (Pawn | Black)) {
-                validMoves.push_back({startIndex, startIndex + 9, startIndex + 9});
-            }
 
+        // regular diagonal capture
+        if (col > 0 && (board[row + 1][col - 1] & Black)) {
+            validMoves.push_back({startIndex, startIndex + 7, startIndex + 7});
+        }
+        if (col < 7 && (board[row + 1][col + 1] & Black)) {
+            validMoves.push_back({startIndex, startIndex + 9, startIndex + 9});
+        }
 
-    } else if (board[row][col] == (Pawn | Black)) {
-        // black pawn
-        if (row == 6) { // black pawn start
-            validMoves.push_back({startIndex, startIndex - 8, -1}); // move forward one
-            validMoves.push_back({startIndex, startIndex - 16, -1}); // move forward two
+    } else if (board[row][col] == (Pawn | Black)) { // black pawn
+        if (row == 6) { // initial position
+            if (board[row - 1][col] == None) validMoves.push_back({startIndex, startIndex - 8, -1}); // move one
+            if (board[row - 2][col] == None) validMoves.push_back({startIndex, startIndex - 16, -1}); // move two
         } else {
-            validMoves.push_back({startIndex, startIndex - 8, -1}); // move forware one if anywhere else
+            if (board[row - 1][col] == None) validMoves.push_back({startIndex, startIndex - 8, -1}); // move one
         }
 
-        // en pasant black
-        if (row == 3) { // black can only enpasant on row 4 (0 indexed)
-            //  left capture check
-            if (col > 0 && board[row][col - 1] == (Pawn | White)) {
-                if (board[row - 1][col - 1] == None) {
-                    validMoves.push_back({startIndex, startIndex - 9, startIndex - 1});
-                }
+        // en passant
+        if (row == 3) { // en passant for black only on row 4 (0 indexed)
+            // left capture check
+            if (col > 0 && board[row][col - 1] == (Pawn | White) && board[row - 1][col - 1] == None) {
+                validMoves.push_back({startIndex, startIndex - 9, startIndex - 1});
             }
             // right capture check
-            if (col < 7 && board[row][col + 1] == (Pawn | White)) {
-                if (board[row - 1][col + 1] == None) {
-                    validMoves.push_back({startIndex, startIndex - 7, startIndex + 1});
-                }
+            if (col < 7 && board[row][col + 1] == (Pawn | White) && board[row - 1][col + 1] == None) {
+                validMoves.push_back({startIndex, startIndex - 7, startIndex + 1});
             }
         }
 
-             // left capture check no unpeasnt - regualr capture
-            if (col > 0 && board[row - 1][col - 1] == (Pawn | White)) {
-                validMoves.push_back({startIndex, startIndex - 9, startIndex - 9});
-            }
-            // right capture check  no unpeasnt - regualr capture
-            if (col < 7 && board[row - 1][col + 1] == (Pawn | White)) {
-                    validMoves.push_back({startIndex, startIndex - 7, startIndex - 7});
-            }
+        // regular diagonal capture
+        if (col > 0 && (board[row - 1][col - 1] & White)) {
+            validMoves.push_back({startIndex, startIndex - 9, startIndex - 9});
+        }
+        if (col < 7 && (board[row - 1][col + 1] & White)) {
+            validMoves.push_back({startIndex, startIndex - 7, startIndex - 7});
+        }
     }
 }
+
 
 void Chess::knightMove(int startIndex) {
     cout << "Gen knight moves, for index " << startIndex << "\n";
@@ -208,6 +197,44 @@ void Chess::horizontalVerticalMoves(int startIndex){
 
 }
 
+bool Chess::isCheck(int kingColor) {
+    int kingPosition = -1;
+    for (int i = 0; i < 8; ++i) {
+        for (int j = 0; j < 8; ++j) {
+            if (board[i][j] == (King | kingColor)) {
+                kingPosition = i * 8 + j;  
+                cout << "King is at position: " << i << ", " << j << endl;
+                break;
+            }
+        }
+        if (kingPosition != -1) break;
+    }
+
+   
+    int originalColor = colorToMove;
+    vector<Move> originalValidMoves = validMoves;  
+
+    colorToMove = (kingColor == White ? Black : White); //color switch for alll other moves
+    validMoves.clear(); 
+    generateMoves();
+
+    
+    bool isKingInCheck = false;
+    for (const Move& move : validMoves) {
+        if (move.target == kingPosition) {
+            isKingInCheck = true;
+            break;
+        }
+    }
+
+
+    colorToMove = originalColor;
+    validMoves = originalValidMoves;  
+
+    return isKingInCheck;
+}
+
+
 
 void Chess::diagonalMove(int startIndex) {
     int notCovered = (1 << 4) - 1, r = 1;
@@ -286,18 +313,19 @@ void Chess::generateMoves() {
                 diagonalMove(i*8+j);
                 horizontalVerticalMoves(i*8+j);
             } else if (board[i][j] == (colorToMove | Rook)) horizontalVerticalMoves(i*8+j);
-            else if (board[i][j] == (colorToMove | Knight)) knightMove(i*8+j); 
+            else if (board[i][j] == (colorToMove | Knight)) knightMove(i*8+j);
+             else if (board[i][j] == (colorToMove | King)) kingMoves(i*8+j);
         }
     }
 }
 
 bool Chess::playMove(string start, string target) {
-    //Check if move is in list of valid moves
+
     generateMoves();
 
     int startIndex = moveIndex(start), targetIndex = moveIndex(target);
 
-    // cout << startIndex << " " << targetIndex << "\n";
+     cout  << "start " << startIndex << " " << targetIndex << "\n";
 
     cout << "Valid moves: ";
     for (auto i : validMoves) {
@@ -310,6 +338,7 @@ bool Chess::playMove(string start, string target) {
 
 
             int piece = board[startIndex/8][startIndex%8];
+            int capturedPiece = board[targetIndex/8][targetIndex%8];
 
             board[startIndex/8][startIndex%8] = None;
             board[targetIndex/8][targetIndex%8] = piece;
@@ -321,13 +350,21 @@ bool Chess::playMove(string start, string target) {
                 else
                     swap(board[targetIndex/8][targetIndex%8 + 1], board[targetIndex/8][0]);
             }
+               if (!isCheck(piece & (White | Black))) {
+                pawnPromotions(targetIndex);
+                validMoves.clear();
+                colorToMove ^= ((3 << 7));
+                return true;
+            }
 
-            pawnPromotions(targetIndex);
-            validMoves.clear();
-            colorToMove ^= ((3 << 7));
-            cout << "\n";
+           
+            board[startIndex / 8][startIndex % 8] = piece;
+            board[targetIndex / 8][targetIndex % 8] = capturedPiece;
+            if (i.isCapture != -1) {
+                board[i.isCapture / 8][i.isCapture % 8] = capturedPiece;
+            }
 
-            return true;
+            cout << "Your king is in Check! ";
         }
     }
     cout << "\n";

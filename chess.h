@@ -35,6 +35,7 @@ class Chess {
     void knightMove(int);
     void castleMove();
     void pawnPromotions(int);
+    bool isCheck(int);
 
     void diagonalMove(int);
     void horizontalVerticalMoves(int);
