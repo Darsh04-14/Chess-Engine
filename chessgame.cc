@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include "chess.h"
 #include "window.h"
-
+// g++ -I/opt/X11/include -L/opt/X11/lib -o chess chessgame.cc chess.cc window.cc -lX11 -std=c++20
 using namespace std;
 
 int main() {
@@ -13,14 +13,13 @@ int main() {
     XEvent event;
     string start, end;
 
-    // Print the initial board
+   
     game.print();
 
     while (1) {
         window.clear();
         drawBoard(window, game, squareSize);
 
-        // Handle X11 events
         while (XPending(window.display) > 0) {
             XNextEvent(window.display, &event);
             if (event.type == Expose) {
@@ -28,7 +27,6 @@ int main() {
             }
         }
 
-        // Check for user input
         cout << "Play move: ";
         cin >> start >> end;
         bool res = game.playMove(start, end);
@@ -39,7 +37,7 @@ int main() {
         }
         game.print();
 
-        usleep(100000); // Slow down the refresh rate
+        usleep(100000); 
     }
 
     return 0;
