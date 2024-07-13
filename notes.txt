@@ -1,0 +1,34 @@
+00000000
+00000000
+00000000
+00000000
+00000000
+00000000
+00000000
+10000000
+
+00000000
+00000000
+00000000
+00000000
+00000000
+00000000
+10000000
+01000000
+
+
+00000000
+00000000
+00000000
+00000000
+00000000
+10000000
+01000000
+00100000
+
+
+Checking for a pin:
+  1. Get ray mask of attack on king
+  2. If attack is intercepted by enemy piece then attack is void
+  3. If two or more friendly pieces are in the way of the attack that it is void
+  4. If only one piece exists, than that piece is pinned

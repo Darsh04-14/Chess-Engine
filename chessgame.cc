@@ -1,11 +1,12 @@
 #include <iostream>
+
 #include "chess.h"
 using namespace std;
 
 // g++ -o chess -std=c++17 chess.cc chessgame.cc
 
 int main() {
-    Chess game("");
+    Chess game("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
     game.print();
 
     while (1) {
