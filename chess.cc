@@ -14,6 +14,23 @@ Chess::Chess(): colorToMove{(1 << 7)} {
     memset(board, 0, sizeof(board));
 }
 
+
+int Chess::getPiece(int row, int col) const {
+    return board[row][col];
+}
+
+int Chess::getEmpty() const {
+    return Empty;
+}
+
+int Chess::getBlack() const {
+    return Black;
+}
+
+int Chess::getWhite() const {
+    return White;
+}
+
 void Chess::kingMoves(int startIndex) {
     int startRow = startIndex / 8;
     int startCol = startIndex % 8;
@@ -30,8 +47,8 @@ void Chess::kingMoves(int startIndex) {
             int targetIndex = newRow * 8 + newCol;
             int targetPiece = board[newRow][newCol];
             int targetColor = targetPiece & (White | Black);
-            if (targetPiece == None || (targetColor != kingColor)) {
-                validMoves.push_back({startIndex, targetIndex, targetPiece == None ? -1 : targetIndex});
+            if (targetPiece == Empty || (targetColor != kingColor)) {
+                validMoves.push_back({startIndex, targetIndex, targetPiece == Empty ? -1 : targetIndex});
             }
         }
     }
@@ -43,9 +60,9 @@ void Chess::castleMove() {
     if (board[row][4] == (colorToMove | King)) {
         bool leftCastle = true, rightCastle = true;
         for (int i = 3; i > 0; --i)
-            if (board[row][i] != None) leftCastle = false;
+            if (board[row][i] != Empty) leftCastle = false;
         for (int i = 5; i < 7; ++i)
-            if (board[row][i] != None) rightCastle = false;
+            if (board[row][i] != Empty) rightCastle = false;
         
         if (leftCastle && board[row][0] == (colorToMove | Rook))
             validMoves.push_back({row*8 + 4, row*8 + 2, -2});
@@ -60,20 +77,20 @@ void Chess::pawnMove(int startIndex) {
 
     if (board[row][col] == (Pawn | White)) { // white pawn
         if (row == 1) { // initial position
-            if (board[row + 1][col] == None) validMoves.push_back({startIndex, startIndex + 8, -1}); // move one
-            if (board[row + 2][col] == None) validMoves.push_back({startIndex, startIndex + 16, -1}); // move two
+            if (board[row + 1][col] == Empty) validMoves.push_back({startIndex, startIndex + 8, -1}); // move one
+            if (board[row + 2][col] == Empty) validMoves.push_back({startIndex, startIndex + 16, -1}); // move two
         } else {
-            if (board[row + 1][col] == None) validMoves.push_back({startIndex, startIndex + 8, -1}); // move one
+            if (board[row + 1][col] == Empty) validMoves.push_back({startIndex, startIndex + 8, -1}); // move one
         }
 
         // en passant
         if (row == 4) { // en passant for white only on row 5
             // left capture check
-            if (col > 0 && board[row][col - 1] == (Pawn | Black) && board[row + 1][col - 1] == None) {
+            if (col > 0 && board[row][col - 1] == (Pawn | Black) && board[row + 1][col - 1] == Empty) {
                 validMoves.push_back({startIndex, startIndex + 7, startIndex - 1});
             }
             // right capture check
-            if (col < 7 && board[row][col + 1] == (Pawn | Black) && board[row + 1][col + 1] == None) {
+            if (col < 7 && board[row][col + 1] == (Pawn | Black) && board[row + 1][col + 1] == Empty) {
                 validMoves.push_back({startIndex, startIndex + 9, startIndex + 1});
             }
         }
@@ -88,20 +105,20 @@ void Chess::pawnMove(int startIndex) {
 
     } else if (board[row][col] == (Pawn | Black)) { // black pawn
         if (row == 6) { // initial position
-            if (board[row - 1][col] == None) validMoves.push_back({startIndex, startIndex - 8, -1}); // move one
-            if (board[row - 2][col] == None) validMoves.push_back({startIndex, startIndex - 16, -1}); // move two
+            if (board[row - 1][col] == Empty) validMoves.push_back({startIndex, startIndex - 8, -1}); // move one
+            if (board[row - 2][col] == Empty) validMoves.push_back({startIndex, startIndex - 16, -1}); // move two
         } else {
-            if (board[row - 1][col] == None) validMoves.push_back({startIndex, startIndex - 8, -1}); // move one
+            if (board[row - 1][col] == Empty) validMoves.push_back({startIndex, startIndex - 8, -1}); // move one
         }
 
         // en passant
         if (row == 3) { // en passant for black only on row 4 (0 indexed)
             // left capture check
-            if (col > 0 && board[row][col - 1] == (Pawn | White) && board[row - 1][col - 1] == None) {
+            if (col > 0 && board[row][col - 1] == (Pawn | White) && board[row - 1][col - 1] == Empty) {
                 validMoves.push_back({startIndex, startIndex - 9, startIndex - 1});
             }
             // right capture check
-            if (col < 7 && board[row][col + 1] == (Pawn | White) && board[row - 1][col + 1] == None) {
+            if (col < 7 && board[row][col + 1] == (Pawn | White) && board[row - 1][col + 1] == Empty) {
                 validMoves.push_back({startIndex, startIndex - 7, startIndex + 1});
             }
         }
@@ -123,7 +140,7 @@ void Chess::knightMove(int startIndex) {
         int a = (i&1 ? -1 : 1)*8, b = (i&2 ? -1 : 1)*2;
         int row = (startIndex + a)/8, col = (startIndex + b)%8;
         if (row >= 0 && row < 8 && col >= 0 && col < 8) {
-            if (board[row][col] == None) validMoves.push_back({startIndex, row*8+col, -1});
+            if (board[row][col] == Empty) validMoves.push_back({startIndex, row*8+col, -1});
             else if (!(board[row][col] & colorToMove)) validMoves.push_back({startIndex, row*8+col, row*8+col});
         }
     }
@@ -133,7 +150,7 @@ void Chess::knightMove(int startIndex) {
         int row = (startIndex + a)/8, col = (startIndex + b)%8;
         cout << row << " " << col << '\n';
         if (row >= 0 && row < 8 && col >= 0 && col < 8) {
-            if (board[row][col] == None) validMoves.push_back({startIndex, row*8+col, -1});
+            if (board[row][col] == Empty) validMoves.push_back({startIndex, row*8+col, -1});
             else if (!(board[row][col] & colorToMove)) validMoves.push_back({startIndex, row*8+col, row*8+col});
         }
     }
@@ -147,7 +164,7 @@ void Chess::horizontalVerticalMoves(int startIndex){
 
     //horizontal to the right
     for(int i = col + 1; i < 8; ++i){
-        if(board[row][i] == None){
+        if(board[row][i] == Empty){
             validMoves.push_back({startIndex, row*8 + i, -1}); // move if nothing in path
         }else{
             if((board[row][i] & (White | Black)) != color){
@@ -159,7 +176,7 @@ void Chess::horizontalVerticalMoves(int startIndex){
 
     //horizontal to the left
      for(int i = col - 1; i >= 0; --i){
-        if(board[row][i] == None){
+        if(board[row][i] == Empty){
             validMoves.push_back({startIndex, row*8 + i, -1}); // move if nothing in path
         }else{
             if((board[row][i] & (White | Black)) != color){
@@ -171,7 +188,7 @@ void Chess::horizontalVerticalMoves(int startIndex){
 
     //vertical upwards
     for(int i = row + 1; i < 8; ++i){
-        if(board[i][col] == None){
+        if(board[i][col] == Empty){
             validMoves.push_back({startIndex, i*8 + col, -1}); // go up all the way
             cout << "(" << startIndex <<  "," << i*8+col<< ")" << endl;
         }else{
@@ -184,7 +201,7 @@ void Chess::horizontalVerticalMoves(int startIndex){
 
     //vertical downwards
     for(int i = row - 1; i >= 0; --i){
-        if(board[i][col] == None){
+        if(board[i][col] == Empty){
             validMoves.push_back({startIndex, i*8 + col, -1}); // go up all the way
             
         }else{
@@ -246,7 +263,7 @@ void Chess::diagonalMove(int startIndex) {
             int f = (i > 1) ? 2*(i%2) - 9 : 9 - 2*(i%2), t = startIndex + r*f;
             int row = t/8, col = t%8;
             if (row >= 0 && row < 8 && col >= 0 && col < 8) {
-                if (board[row][col] == None) validMoves.push_back({startIndex, t, -1});
+                if (board[row][col] == Empty) validMoves.push_back({startIndex, t, -1});
                 else {
                     if (!(board[row][col] & colorToMove)) validMoves.push_back({startIndex, t, t});
                     notCovered ^= d;  
@@ -333,14 +350,14 @@ bool Chess::playMove(string start, string target) {
         if (startIndex == i.start && targetIndex == i.target) {
 
             if (i.isCapture != -1)
-                board[i.isCapture/8][i.isCapture%8] = None;
+                board[i.isCapture/8][i.isCapture%8] = Empty;
             
 
 
             int piece = board[startIndex/8][startIndex%8];
             int capturedPiece = board[targetIndex/8][targetIndex%8];
 
-            board[startIndex/8][startIndex%8] = None;
+            board[startIndex/8][startIndex%8] = Empty;
             board[targetIndex/8][targetIndex%8] = piece;
 
             // Is a castling move, so put rook in appropriate position
@@ -416,7 +433,7 @@ void Chess::print() {
         cout << row + 1 << ' ';
         for (int col = 0; col < 8; ++col) {
             int Piece = board[row][col];
-            if (Piece == None) cout << ((row + col)%2 ? '-' : ' ');
+            if (Piece == Empty) cout << ((row + col)%2 ? '-' : ' ');
             else {
                 char Letter = Piece&((1 << 7) - 1);
                 cout << ((Piece&Black) ? char(Letter + 32) : Letter); 
