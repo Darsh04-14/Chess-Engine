@@ -4,9 +4,10 @@
 using namespace std;
 
 // g++ -o chess -std=c++17 chess.cc chessgame.cc
+// rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR - FEN for normal game setup
 
 int main() {
-    Chess game("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    Chess game("4k3/1p6/8/8/P7/8/8/4K3");
     game.print();
 
     while (1) {

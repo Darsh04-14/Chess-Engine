@@ -45,7 +45,7 @@ class Chess {
     int colorToMove;
 
     vector<Move> validMoves;     // valid moves from start to end square 0 - 63
-    vector<Move> previousMoves;  // Keeps track of previous moves for undo move function
+    vector<Move> previousMoves;  // Keeps track of previous moves for undo move function + checking for en passant
 
     void kingMoves(int);
     void pawnMove(int);  // parameter is start of square where pawn is
