@@ -1,54 +1,118 @@
 #define CHESS_H
 
-#include <vector>
 #include <iostream>
+#include <vector>
 using namespace std;
 
-//need to update this
+typedef unsigned long long ULL;
 
+// The special piece is simply needed to make the castle and en passant flag bits
+enum Piece { None, King, Queen, Knight, Bishop, Rook, Pawn, Special };
+enum Colour { White = 8, Black = 16 };
 
 class Chess {
+    bool debugHelper = false;
+    static const short NUM_ROWS = 8;
+    static const short NUM_COLS = 8;
 
-    const int None = 0;
-    const int King = 75;
-    const int Queen = 81;
-    const int Knight = 78;
-    const int Bishop = 66;
-    const int Rook = 82;
-    const int Pawn = 80;
+    static const short ColourType = (3 << 3);
+    static const short PieceType = (1 << 3) - 1;
 
-    const int White = (1 << 7);
-    const int Black = (1 << 8);
+    // Precomputed ray masks used to determine pinned pieces
+    unsigned long long diagonalMasks[16];
+    unsigned long long rdiagonalMasks[16];
+    unsigned long long horizontalMasks[8];
+    unsigned long long verticalMasks[8];
 
+    enum MoveFlag { CAPTURE, PROMOTION, ENPASSANT = 14, CASTLE = 15 };
     struct Move {
-        int start; // start square
-        int target; // final square
-        int isCapture; // see if opposite coloure peice available for capture
+        static const short positionMask = (1 << 6) - 1;
+        short moveData;
+        short capturePromotionData;
+        // moveData will be represented as SSSSSS TTTTTT F PPP
+        // S - Starting square bits
+        // T - Target Sqaure bits
+        // F - Flag bits, capture -> 0, promotion -> 1
+        // P - Piece type for captures or promotions
+        // Special Cases: En Passant and Castling use FPPP bits together, with values 0111 and 1111 respectively
+        // * You may capture nothing, which is just a regular move
+        // * The capture promotion variable stores promoted piece data when a pawn capture leads to a promotion
+
+        Move();
+        Move(int, int, MoveFlag = CAPTURE, Piece = None);
+        Move(int, int, MoveFlag, int);
+        bool flag() const;
+        short piece() const;
+        short start() const;
+        short target() const;
+        short isCapture() const;
+        bool isEnPassant() const;
+        bool isCastle() const;
+        short isPromotion() const;
+        short isCapturePromotion() const;
+        bool operator==(const Move&) const;
     };
 
-    int board[8][8];
-    int colorToMove;
+    Move legalMoves[321];  // Max number of pseudolegal moves in any position
+    short legalMovesLen;
 
-    vector<Move> validMoves;// valid moves from start to end square 0 - 63
+    vector<Move> previousMoves;
 
-    void kingMoves(int);
-    void pawnMove(int); // parameter is start of square where pawn is 
-    void knightMove(int);
-    void castleMove();
-    void pawnPromotions(int);
-    bool isCheck(int);
+    short castlingRights[2][2];
 
-    void diagonalMove(int);
-    void horizontalVerticalMoves(int);
-    void generateMoves();
+    // Boolean value to determine if generated moves should be added to vector or capture mask
+    bool getAttackMasks;
+    Colour colourToMove;
 
-    int moveIndex(string);
+    // Used to efficiently compute pins
+    ULL bitBoard[2][6];
 
-public:
+    // A piece will be represented as CCPPP
+    // C - Colour bits
+    // P - Piece type bits
+    short board[64];
+
+    // Used to keep track of squares that each colour is able to capture or move to
+    ULL attackMask[2];
+
+    // Used to track pins on pieces
+    vector<ULL> pinRayMask;
+
+    Piece getPiece(char);
+    // ULL& BitBoard(Colour, Piece);
+
+    void getAttackSquares();
+    short getKing(Colour);
+    bool isSquareAttacked(short, short);
+    ULL isSquarePinned(short);
+    void generateRayMasks();
+    // void genPins();
+
+    void genCaptures();
+
+    // Generates legal moves
+    void generatePseudoLegalMoves();
+    void generateLegalMoves();
+    void genCastleMove();
+    void genKingMoves(short);
+    void genPawnMoves(short);
+    void genKnightMoves(short);
+    void genSlidingMoves(short);
+
+    // Responsible for adding moves to vector, updating captureMask state, and filtering out any illegal moves
+    void addMove(const Move&);
+
+    void makeMove(const Move&);
+
+   public:
     Chess();
     Chess(string);
-
-    bool playMove(string, string);// start and end for entering
-
+    bool playMove(short, short);
+    bool playMove(string, string);
+    void unmakeMove();
     void print();
+    void printLegalMoves();
+    void printCastleRights();
+    int perft(int, int = 0);
+    friend ostream& operator<<(ostream&, Chess&);
 };
