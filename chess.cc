@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <cstring>
 #include "chess.h"
 
 int Chess::moveIndex(string a) {
