@@ -21,5 +21,5 @@ public:
 };
 
 void drawBoard(ChessWindow& window, const Chess& game, int squareSize);
-
+//adding
 #endif

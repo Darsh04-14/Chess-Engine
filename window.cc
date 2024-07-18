@@ -65,14 +65,14 @@ void drawBoard(ChessWindow& window, const Chess& game, int squareSize) {
 
 for (int col = 0; col < 8; ++col) {
     char letter = 'a' + col;
-    window.drawText((col + 1) * squareSize + squareSize / 2, 9 * squareSize + 20, &letter); // Bottom letters
-    window.drawText((col + 1) * squareSize + squareSize / 2, squareSize - 10, &letter); // Top letters
+    window.drawText((col + 1) * squareSize + squareSize / 2, 9 * squareSize + 20, &letter); // bottom letters
+    window.drawText((col + 1) * squareSize + squareSize / 2, squareSize - 10, &letter); // top letters
 }
 
 for (int row = 0; row < 8; ++row) {
     char number = '1' + row;
-    window.drawText(10, (8 - row) * squareSize + squareSize / 2, &number); // Left numbers
-    window.drawText(9 * squareSize + 10, (8 - row) * squareSize + squareSize / 2, &number); // Right numbers
+    window.drawText(10, (8 - row) * squareSize + squareSize / 2, &number); // left numbers
+    window.drawText(9 * squareSize + 10, (8 - row) * squareSize + squareSize / 2, &number); // right numbers
 }
 
 }
