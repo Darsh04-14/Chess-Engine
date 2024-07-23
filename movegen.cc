@@ -17,7 +17,7 @@ void Chess::genCastleMove() {
         for (int i = 2; i >= 0; --i)
             if (isSquareAttacked(colourToMove ^ ColourType, kingIndex - i)) canCastle = false;
 
-        if (canCastle) addMove({kingIndex, kingIndex - 2, CASTLE});
+        if (canCastle) addMove({kingIndex, kingIndex - 2, MoveFlag::CASTLE});
     }
     canCastle = true;
     if (rightCastle == -1) {
@@ -33,7 +33,7 @@ void Chess::genCastleMove() {
             }
         }
 
-        if (canCastle) addMove({kingIndex, kingIndex + 2, CASTLE});
+        if (canCastle) addMove({kingIndex, kingIndex + 2, MoveFlag::CASTLE});
     }
 }
 
@@ -49,7 +49,7 @@ void Chess::genKingMoves(short startIndex) {
         if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
             int targetIndex = newRow * 8 + newCol;
             Piece targetPiece = Piece(board[targetIndex] & PieceType);
-            addMove({row * 8 + col, targetIndex, CAPTURE, targetPiece});
+            addMove({row * 8 + col, targetIndex, MoveFlag::CAPTURE, targetPiece});
         }
     }
 }
@@ -62,14 +62,14 @@ void Chess::genPawnMoves(short startIndex) {
             if (row < 6)
                 addMove({startIndex, startIndex + 8});
             else {
-                for (int i = 2; i <= 5; ++i) addMove({startIndex, startIndex + 8, PROMOTION, i});
+                for (int i = 2; i <= 5; ++i) addMove({startIndex, startIndex + 8, MoveFlag::PROMOTION, i});
             }
         }
 
         // regular diagonal capture
         short leftDiagonal = board[startIndex + 7];
         if (col > 0) {
-            Move m{startIndex, startIndex + 7, CAPTURE, leftDiagonal & PieceType};
+            Move m{startIndex, startIndex + 7, MoveFlag::CAPTURE, leftDiagonal & PieceType};
             if (startIndex + 7 >= 56) {
                 for (int i = 2; i <= 5; ++i) {
                     m.capturePromotionData = i;
@@ -82,7 +82,7 @@ void Chess::genPawnMoves(short startIndex) {
 
         short rightDiagonal = board[startIndex + 9];
         if (col < 7) {
-            Move m{startIndex, startIndex + 9, CAPTURE, rightDiagonal & PieceType};
+            Move m{startIndex, startIndex + 9, MoveFlag::CAPTURE, rightDiagonal & PieceType};
             if (startIndex + 9 >= 56) {
                 for (int i = 2; i <= 5; ++i) {
                     m.capturePromotionData = i;
@@ -102,11 +102,11 @@ void Chess::genPawnMoves(short startIndex) {
         if (row == 4 && isEnPassant) {  // en passant for white only on row 4
             // left capture check
             if (col > 0 && board[startIndex - 1] == (Pawn | Black) && startIndex - 1 == prevEnd) {
-                addMove({startIndex, startIndex + 7, ENPASSANT});
+                addMove({startIndex, startIndex + 7, MoveFlag::ENPASSANT});
             }
             // right capture check
             if (col < 7 && board[startIndex + 1] == (Pawn | Black) && startIndex + 1 == prevEnd) {
-                addMove({startIndex, startIndex + 9, ENPASSANT});
+                addMove({startIndex, startIndex + 9, MoveFlag::ENPASSANT});
             }
         }
     } else {                                                                                         // black pawn
@@ -115,14 +115,14 @@ void Chess::genPawnMoves(short startIndex) {
             if (row > 1)
                 addMove({startIndex, startIndex - 8});
             else {
-                for (int i = 2; i <= 5; ++i) addMove({startIndex, startIndex - 8, PROMOTION, i});
+                for (int i = 2; i <= 5; ++i) addMove({startIndex, startIndex - 8, MoveFlag::PROMOTION, i});
             }
         }
 
         // regular diagonal capture
         short leftDiagonal = board[startIndex - 9];
         if (col > 0) {
-            Move m{startIndex, startIndex - 9, CAPTURE, leftDiagonal & PieceType};
+            Move m{startIndex, startIndex - 9, MoveFlag::CAPTURE, leftDiagonal & PieceType};
             if (startIndex - 9 <= 7) {
                 for (int i = 2; i <= 5; ++i) {
                     m.capturePromotionData = i;
@@ -135,7 +135,7 @@ void Chess::genPawnMoves(short startIndex) {
 
         short rightDiagonal = board[startIndex - 7];
         if (col < 7) {
-            Move m{startIndex, startIndex - 7, CAPTURE, rightDiagonal & PieceType};
+            Move m{startIndex, startIndex - 7, MoveFlag::CAPTURE, rightDiagonal & PieceType};
             if (startIndex - 7 <= 7) {
                 for (int i = 2; i <= 5; ++i) {
                     m.capturePromotionData = i;
@@ -155,11 +155,11 @@ void Chess::genPawnMoves(short startIndex) {
         if (row == 3 && isEnPassant) {  // en passant for black only on row 5
             // left capture check
             if (col > 0 && board[startIndex - 1] == (Pawn | White) && startIndex - 1 == prevEnd) {
-                addMove({startIndex, startIndex - 9, ENPASSANT});
+                addMove({startIndex, startIndex - 9, MoveFlag::ENPASSANT});
             }
             // right capture check
             if (col < 7 && board[startIndex + 1] == (Pawn | White) && startIndex + 1 == prevEnd) {
-                addMove({startIndex, startIndex - 7, ENPASSANT});
+                addMove({startIndex, startIndex - 7, MoveFlag::ENPASSANT});
             }
         }
     }
@@ -176,7 +176,7 @@ void Chess::genKnightMoves(short startIndex) {
         if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
             int targetIndex = newRow * 8 + newCol;
             Piece targetPiece = Piece(board[targetIndex] & PieceType);
-            addMove({row * 8 + col, targetIndex, CAPTURE, targetPiece});
+            addMove({row * 8 + col, targetIndex, MoveFlag::CAPTURE, targetPiece});
         }
     }
 }
@@ -197,7 +197,7 @@ void Chess::genSlidingMoves(short startIndex) {
             int targetIndex = newRow * 8 + newCol;
             Piece targetPiece = Piece(board[targetIndex] & PieceType);
 
-            addMove({startIndex, targetIndex, CAPTURE, targetPiece});
+            addMove({startIndex, targetIndex, MoveFlag::CAPTURE, targetPiece});
             if (targetPiece != None) break;
 
             newRow += offsets[i][0];
