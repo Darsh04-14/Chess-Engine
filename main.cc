@@ -11,9 +11,11 @@ int main() {
     string FEN = "nbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     Chess game(FEN);
 
-    cout << game.perft(4, 4) << "\n";
-
-    cout << "Final Position:\n";
     game.print();
-    cout << "\n";
+    while (!game.end()) {
+        string start, end;
+        cin >> start >> end;
+        game.playMove(start, end);
+        game.print();
+    }
 }

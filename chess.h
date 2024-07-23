@@ -59,6 +59,7 @@ class Chess {
     bool getAttackMasks;
 
     Colour colourToMove;
+    bool gameOver;
 
     // Used to efficiently compute pins
     // ULL bitBoard[2][6];
@@ -76,8 +77,6 @@ class Chess {
     void getAttackSquares();
     short getKing(Colour);
     bool isSquareAttacked(short, short);
-
-    void genCaptures();
 
     // Generates legal moves
     void generatePseudoLegalMoves();
@@ -102,6 +101,9 @@ class Chess {
     void print();
     void printLegalMoves();
     void printCastleRights();
+    void checkGameState();
+    bool end();
     int perft(int, int = 0);
+    void resignPlayer();
     friend ostream& operator<<(ostream&, Chess&);
 };

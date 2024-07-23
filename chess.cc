@@ -244,15 +244,16 @@ void Chess::print() {
                 cout << ((p & Black) ? char(Letter + 32) : Letter);
             }
         }
-        cout << " | ";
-        for (int col = 0; col <= 7; ++col)
-            cout << (board[row * 8 + col] < 10 ? "0" : "") << board[row * 8 + col] << " ";
-        cout << endl;
+        cout << "\n";
     }
     cout << "  abcdefgh\n";
 }
 
 bool Chess::playMove(short startIndex, short targetIndex) {
+    if (gameOver) {
+        cout << "Game is over!";
+        return true;
+    }
     for (int i = 0; i < legalMovesLen; ++i) {
         Move move = legalMoves[i];
         if (move.start() == startIndex && move.target() == targetIndex) {
@@ -275,6 +276,7 @@ bool Chess::playMove(short startIndex, short targetIndex) {
             }
             legalMovesLen = 0;
             generateLegalMoves();
+            checkGameState();
             return true;
         }
     }
@@ -373,4 +375,41 @@ void Chess::printLegalMoves() {
 void Chess::printCastleRights() {
     cout << "White: " << castlingRights[0][0] << " " << castlingRights[0][1] << "\n";
     cout << "Black: " << castlingRights[1][0] << " " << castlingRights[1][1] << "\n";
+}
+
+void Chess::checkGameState() {
+    short kingIndex = getKing(colourToMove);
+    Colour enemyColour = Colour(colourToMove ^ ColourType);
+    string colour = colourToMove == White ? "White" : "Black";
+
+    bool pieceFound = false;
+    for (int i = 0; i < 64; ++i) {
+        if ((board[i] & PieceType) != King) {
+            pieceFound = true;
+            break;
+        }
+    }
+
+    if (!pieceFound) {
+        gameOver = true;
+        cout << "Stalemate!";
+        return;
+    }
+
+    if (legalMovesLen) {
+        if (isSquareAttacked(enemyColour, kingIndex)) cout << colour << "is in check.\n\n";
+    } else if (isSquareAttacked(enemyColour, kingIndex)) {
+        gameOver = true;
+        cout << "Checkmate! " << colour << " wins !\n\n ";
+    } else {
+        gameOver = true;
+        cout << "Stalemate!";
+    }
+}
+
+bool Chess::end() { return gameOver; }
+
+void Chess::resignPlayer() {
+    string enemyColour = colourToMove == White ? "Black" : "White";
+    cout << enemyColour << " wins!\n";
 }
