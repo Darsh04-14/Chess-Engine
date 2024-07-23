@@ -11,18 +11,11 @@ enum Piece { None, King, Queen, Knight, Bishop, Rook, Pawn, Special };
 enum Colour { White = 8, Black = 16 };
 
 class Chess {
-    bool debugHelper = false;
     static const short NUM_ROWS = 8;
     static const short NUM_COLS = 8;
 
     static const short ColourType = (3 << 3);
     static const short PieceType = (1 << 3) - 1;
-
-    // Precomputed ray masks used to determine pinned pieces
-    unsigned long long diagonalMasks[16];
-    unsigned long long rdiagonalMasks[16];
-    unsigned long long horizontalMasks[8];
-    unsigned long long verticalMasks[8];
 
     enum MoveFlag { CAPTURE, PROMOTION, ENPASSANT = 14, CASTLE = 15 };
     struct Move {
@@ -53,40 +46,36 @@ class Chess {
         bool operator==(const Move&) const;
     };
 
-    Move legalMoves[321];  // Max number of pseudolegal moves in any position
+    Move legalMoves[225];  // Max number of pseudolegal moves in any position
     short legalMovesLen;
 
+    // Keep track of previous moves for undo functionality
     vector<Move> previousMoves;
 
+    // Used to keep track of castling rights for each player
     short castlingRights[2][2];
 
-    // Boolean value to determine if generated moves should be added to vector or capture mask
+    // Boolean value to determine if we are generating legal moves or attack masks
     bool getAttackMasks;
+
     Colour colourToMove;
 
     // Used to efficiently compute pins
-    ULL bitBoard[2][6];
+    // ULL bitBoard[2][6];
 
     // A piece will be represented as CCPPP
     // C - Colour bits
-    // P - Piece type bits
+    // P - Piece bits
     short board[64];
 
     // Used to keep track of squares that each colour is able to capture or move to
     ULL attackMask[2];
 
-    // Used to track pins on pieces
-    vector<ULL> pinRayMask;
-
     Piece getPiece(char);
-    // ULL& BitBoard(Colour, Piece);
 
     void getAttackSquares();
     short getKing(Colour);
     bool isSquareAttacked(short, short);
-    ULL isSquarePinned(short);
-    void generateRayMasks();
-    // void genPins();
 
     void genCaptures();
 
