@@ -17,5 +17,6 @@ int main() {
         cin >> start >> end;
         game.playMove(start, end);
         game.print();
+        cout << "\n";
     }
 }
