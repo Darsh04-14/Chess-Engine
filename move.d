@@ -1,1 +1,1 @@
-move.o: move.cc chess.h
+move.o: move.cc move.h types.h

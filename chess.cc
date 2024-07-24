@@ -1,5 +1,7 @@
-#include "chess.h"
+#include <vector>
 using namespace std;
+
+#include "chess.h"
 
 void Chess::getAttackSquares() {
     getAttackMasks = true;
@@ -19,19 +21,19 @@ bool Chess::isSquareAttacked(short colour, short index) { return attackMask[colo
 Piece Chess::getPiece(char a) {
     a = tolower(a);
     if (a == 'r')
-        return Rook;
+        return Piece::Rook;
     else if (a == 'b')
-        return Bishop;
+        return Piece::Bishop;
     else if (a == 'n')
-        return Knight;
+        return Piece::Knight;
     else if (a == 'q')
-        return Queen;
+        return Piece::Queen;
     else if (a == 'k')
-        return King;
+        return Piece::King;
     else if (a == 'p')
-        return Pawn;
+        return Piece::Pawn;
     else
-        return None;
+        return Piece::None;
 }
 
 short Chess::getKing(Colour c) {
@@ -138,9 +140,9 @@ Chess::Chess(string FEN) : Chess() {
 
     // Colour to move flag
     if (++i >= FEN.length()) {
-        colourToMove = White;
+        colourToMove = Colour::White;
     } else {
-        colourToMove = FEN[i] == 'w' ? White : Black;
+        colourToMove = FEN[i] == 'w' ? Colour::White : Colour::Black;
     }
 
     i += 2;
@@ -250,10 +252,6 @@ void Chess::print() {
 }
 
 bool Chess::playMove(short startIndex, short targetIndex) {
-    if (gameOver) {
-        cout << "Game is over!";
-        return true;
-    }
     for (int i = 0; i < legalMovesLen; ++i) {
         Move move = legalMoves[i];
         if (move.start() == startIndex && move.target() == targetIndex) {
@@ -266,7 +264,7 @@ bool Chess::playMove(short startIndex, short targetIndex) {
                 } while (p != 'q' && p != 'n' && p != 'b' && p != 'r');
                 Piece newPiece = getPiece(p);
                 if (move.isPromotion()) {
-                    makeMove({startIndex, targetIndex, PROMOTION, newPiece});
+                    makeMove({startIndex, targetIndex, MoveFlag::PROMOTION, newPiece});
                 } else {
                     move.capturePromotionData = newPiece;
                     makeMove(move);
@@ -280,6 +278,7 @@ bool Chess::playMove(short startIndex, short targetIndex) {
             return true;
         }
     }
+    cout << "Invalid Move!\n";
     return false;
 }
 
@@ -332,6 +331,7 @@ void Chess::unmakeMove() {
 
     previousMoves.pop_back();
     colourToMove = prevColour;
+    if (gameOver) gameOver = false;
 }
 
 int Chess::perft(int depth, int debug) {
@@ -400,7 +400,7 @@ void Chess::checkGameState() {
         if (isSquareAttacked(enemyColour, kingIndex)) cout << colour << "is in check.\n\n";
     } else if (isSquareAttacked(enemyColour, kingIndex)) {
         gameOver = true;
-        cout << "Checkmate! " << colour << " wins !\n\n ";
+        cout << "Checkmate! " << colour << " wins!\n\n";
     } else {
         gameOver = true;
         cout << "Stalemate!";
@@ -413,3 +413,7 @@ void Chess::resignPlayer() {
     string enemyColour = colourToMove == White ? "Black" : "White";
     cout << enemyColour << " wins!\n";
 }
+
+vector<Move> Chess::getLegalMoves() { return vector<Move>(legalMoves, legalMoves + legalMovesLen); }
+
+Colour Chess::getCurrentPlayer() { return colourToMove; }
