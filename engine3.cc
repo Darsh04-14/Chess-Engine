@@ -3,7 +3,7 @@
 void Engine3::notify() {
     vector<Move> currentMoves = chess->getLegalMoves();
     Colour currentColour = chess->getCurrentPlayer();
-    Colour enemyColour = Colour((3 << 3) ^ currentColour);
+    Colour enemyColour = Colour(ColourType ^ currentColour);
 
     short enemyKingIndex = chess->getKing(enemyColour);
 

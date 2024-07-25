@@ -10,12 +10,12 @@ using namespace std;
 
 typedef unsigned long long ULL;
 
+static const short ColourType = (3 << 3);
+static const short PieceType = (1 << 3) - 1;
+
 class Chess : public Game {
     static const short NUM_ROWS = 8;
     static const short NUM_COLS = 8;
-
-    static const short ColourType = (3 << 3);
-    static const short PieceType = (1 << 3) - 1;
 
     Move legalMoves[225];  // Max number of pseudolegal moves in any position
     short legalMovesLen;
@@ -30,10 +30,9 @@ class Chess : public Game {
     bool getAttackMasks;
 
     Colour colourToMove;
-    bool gameOver;
-
-    // Used to efficiently compute pins
-    // ULL bitBoard[2][6];
+    // Takes Values: 0,2,4,8,16,24
+    // Correspond to game states: Game Not Over, White Check, Black Check, White Win, Black Win, Draw
+    int gameState;
 
     // A piece will be represented as CCPPP
     // C - Colour bits
@@ -71,12 +70,14 @@ class Chess : public Game {
     void print();
     void printLegalMoves();
     void printCastleRights();
-    void checkGameState();
+    void setGameState();
+    void printGameState();
     bool end();
     short getKing(Colour);
     int perft(int, int = 0);
     void resignPlayer();
     vector<Move> getLegalMoves() override;
+    vector<short> getBoard() override;
     friend ostream& operator<<(ostream&, Chess&);
 };
 

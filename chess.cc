@@ -101,6 +101,8 @@ void Chess::generateLegalMoves() {
         legalMoves[i] = pseudoLegalMoves[i];
     }
     legalMovesLen = j;
+
+    setGameState();
 }
 
 void Chess::addMove(const Move& m) {
@@ -274,7 +276,6 @@ bool Chess::playMove(short startIndex, short targetIndex) {
             }
             legalMovesLen = 0;
             generateLegalMoves();
-            checkGameState();
             return true;
         }
     }
@@ -331,7 +332,7 @@ void Chess::unmakeMove() {
 
     previousMoves.pop_back();
     colourToMove = prevColour;
-    if (gameOver) gameOver = false;
+    if (gameState) gameState = 0;
 }
 
 int Chess::perft(int depth, int debug) {
@@ -377,7 +378,7 @@ void Chess::printCastleRights() {
     cout << "Black: " << castlingRights[1][0] << " " << castlingRights[1][1] << "\n";
 }
 
-void Chess::checkGameState() {
+void Chess::setGameState() {
     short kingIndex = getKing(colourToMove);
     Colour enemyColour = Colour(colourToMove ^ ColourType);
     string colour = colourToMove == White ? "White" : "Black";
@@ -391,23 +392,33 @@ void Chess::checkGameState() {
     }
 
     if (!pieceFound) {
-        gameOver = true;
-        cout << "Stalemate!";
+        gameState = White | Black;
         return;
     }
 
     if (legalMovesLen) {
-        if (isSquareAttacked(enemyColour, kingIndex)) cout << colour << "is in check.\n\n";
+        if (isSquareAttacked(enemyColour, kingIndex)) gameState = colourToMove / 4;
     } else if (isSquareAttacked(enemyColour, kingIndex)) {
-        gameOver = true;
-        cout << "Checkmate! " << colour << " wins!\n\n";
+        gameState = enemyColour;
     } else {
-        gameOver = true;
-        cout << "Stalemate!";
+        gameState = White | Black;
     }
 }
 
-bool Chess::end() { return gameOver; }
+void Chess::printGameState() {
+    if (gameState == (White | Black))
+        cout << "Stalemate!\n";
+    else if (gameState == White)
+        cout << "Checkmate! White wins!\n";
+    else if (gameState == Black)
+        cout << "Checkmate! Black wins!\n";
+    else if (gameState == White / 4)
+        cout << "White is in check.\n";
+    else if (gameState == Black / 4)
+        cout << "Black is in check.\n";
+}
+
+bool Chess::end() { return (gameState & 24) ? gameState : 0; }
 
 void Chess::resignPlayer() {
     string enemyColour = colourToMove == White ? "Black" : "White";
@@ -415,5 +426,7 @@ void Chess::resignPlayer() {
 }
 
 vector<Move> Chess::getLegalMoves() { return vector<Move>(legalMoves, legalMoves + legalMovesLen); }
+
+vector<short> Chess::getBoard() { return vector<short>(board, board + 64); }
 
 Colour Chess::getCurrentPlayer() { return colourToMove; }
