@@ -33,7 +33,20 @@ Piece Chess::getPiece(char a) {
     else if (a == 'p')
         return Piece::Pawn;
     else
-        return Piece::None;
+        return Piece::NoPiece;
+}
+
+Piece Chess::getPieceAt(int row, int col) const {
+    return static_cast<Piece>(board[row * 8 + col]);
+}
+
+short Chess::getEmpty() const {
+    return static_cast<short>(Piece::NoPiece);
+}
+
+
+short Chess::getBlack() const {
+return Black;  // Adjust this based on your actual implementation
 }
 
 short Chess::getKing(Colour c) {
@@ -47,7 +60,7 @@ void Chess::generatePseudoLegalMoves() {
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
             short index = i * 8 + j;
-            if (board[index] == None)
+            if (board[index] == NoPiece)
                 continue;
             else if (board[index] == (colourToMove | Pawn))
                 genPawnMoves(index);
@@ -109,7 +122,7 @@ void Chess::addMove(const Move& m) {
     if (!getAttackMasks && (board[m.start()] & ColourType) != (board[m.target()] & ColourType)) {
         // Make sure if it's a pawn diagonal capture then it's actually capturing something
         bool isDiagonal = abs(abs(m.target() - m.start()) - 8) == 1;
-        if ((board[m.start()] & PieceType) == Pawn && isDiagonal && !m.isEnPassant() && m.isCapture() == None) return;
+        if ((board[m.start()] & PieceType) == Pawn && isDiagonal && !m.isEnPassant() && m.isCapture() == NoPiece) return;
         legalMoves[legalMovesLen++] = m;
     } else {
         bool isPawnStraight = (board[m.start()] & PieceType) == Pawn && (m.target() - m.start()) % 8 == 0;
@@ -184,7 +197,7 @@ void Chess::makeMove(const Move& takenMove) {
     Piece targetPiece = Piece(takenMove.piece());
 
     board[takenMove.target()] = board[takenMove.start()];
-    board[takenMove.start()] = None;
+    board[takenMove.start()] = NoPiece;
 
     bool kingMove = startPiece == King;
     bool rookMove = startPiece == Rook;
@@ -196,7 +209,7 @@ void Chess::makeMove(const Move& takenMove) {
         short offset = (takenMove.target() > takenMove.start() ? 1 : -2);
         short rookIndex = takenMove.target() + offset;
 
-        board[rookIndex] = None;
+        board[rookIndex] = NoPiece;
         offset = -offset + (offset < 0 ? 1 : -1);
 
         short rookTargetIndex = rookIndex + offset;
@@ -228,7 +241,7 @@ void Chess::makeMove(const Move& takenMove) {
         }
     } else if (takenMove.isEnPassant()) {
         short offset = takenMove.target() - takenMove.start() + (colourToMove == White ? -8 : 8);
-        board[takenMove.start() + offset] = None;
+        board[takenMove.start() + offset] = NoPiece;
     } else if (takenMove.isPromotion()) {
         board[takenMove.target()] = colourToMove | targetPiece;
     }
@@ -241,7 +254,7 @@ void Chess::print() {
         cout << row + 1 << ' ';
         for (int col = 0; col < 8; ++col) {
             short p = board[row * 8 + col];
-            if ((p & PieceType) == None) {
+            if ((p & PieceType) == NoPiece) {
                 cout << ((row + col + 1) % 2 ? '-' : ' ');
             } else {
                 char Letter = letters[(p & PieceType) - 1];
@@ -305,7 +318,7 @@ void Chess::unmakeMove() {
     short targetIndex = lastMove.target();
 
     board[startIndex] = board[targetIndex];
-    board[targetIndex] = None;
+    board[targetIndex] = NoPiece;
 
     if (lastMove.isCastle()) {
         short rookStartIndex = startIndex + (targetIndex > startIndex ? 3 : -4);

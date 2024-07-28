@@ -21,18 +21,22 @@ int Engine4::boardEvaluation() {
         Piece piece = Piece(board[i] & PieceType);
         Colour pieceColour = Colour(board[i] & ColourType);
 
-        if (piece != None) {
+        if (piece != NoPiece) {
             if (pieceColour == c) {
                 if (!chess->isSquareAttacked(enemyColour, i)) {
                     score += pieceValue[piece - 1];
                 } else if (chess->isSquareAttacked(c, i)) {
                     score += pieceValue[piece - 1] / 2;
+                } else {
+                    score += pieceValue[piece - 1] / 4;
                 }
             } else {
                 if (!chess->isSquareAttacked(c, i)) {
                     score -= pieceValue[piece - 1];
                 } else if (chess->isSquareAttacked(enemyColour, i)) {
                     score -= pieceValue[piece - 1] / 2;
+                } else {
+                    score -= pieceValue[piece - 1] / 4;
                 }
             }
         }

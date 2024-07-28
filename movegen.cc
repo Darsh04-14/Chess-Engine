@@ -12,7 +12,7 @@ void Chess::genCastleMove() {
     bool canCastle = true;
     if (leftCastle == -1) {
         for (int i = 3; i > 0; --i)
-            if (board[kingIndex - i] != None) canCastle = false;
+            if (board[kingIndex - i] != NoPiece) canCastle = false;
 
         for (int i = 2; i >= 0; --i)
             if (isSquareAttacked(colourToMove ^ ColourType, kingIndex - i)) canCastle = false;
@@ -22,7 +22,7 @@ void Chess::genCastleMove() {
     canCastle = true;
     if (rightCastle == -1) {
         for (int i = 2; i > 0; --i) {
-            if (board[kingIndex + i] != None) {
+            if (board[kingIndex + i] != NoPiece) {
                 canCastle = false;
             }
         }
@@ -57,8 +57,8 @@ void Chess::genKingMoves(short startIndex) {
 void Chess::genPawnMoves(short startIndex) {
     short row = startIndex / 8, col = startIndex % 8;
     if (colourToMove == White) {                                                                     // white pawn
-        if (board[startIndex + 8] == None) {                                                         // initial position
-            if (row == 1 && board[startIndex + 16] == None) addMove({startIndex, startIndex + 16});  // move two
+        if (board[startIndex + 8] == NoPiece) {                                                         // initial position
+            if (row == 1 && board[startIndex + 16] == NoPiece) addMove({startIndex, startIndex + 16});  // move two
             if (row < 6)
                 addMove({startIndex, startIndex + 8});
             else {
@@ -110,8 +110,8 @@ void Chess::genPawnMoves(short startIndex) {
             }
         }
     } else {                                                                                         // black pawn
-        if (board[startIndex - 8] == None) {                                                         // initial position
-            if (row == 6 && board[startIndex - 16] == None) addMove({startIndex, startIndex - 16});  // move two
+        if (board[startIndex - 8] == NoPiece) {                                                         // initial position
+            if (row == 6 && board[startIndex - 16] == NoPiece) addMove({startIndex, startIndex - 16});  // move two
             if (row > 1)
                 addMove({startIndex, startIndex - 8});
             else {
@@ -198,7 +198,7 @@ void Chess::genSlidingMoves(short startIndex) {
             Piece targetPiece = Piece(board[targetIndex] & PieceType);
 
             addMove({startIndex, targetIndex, MoveFlag::CAPTURE, targetPiece});
-            if (targetPiece != None) break;
+            if (targetPiece != NoPiece) break;
 
             newRow += offsets[i][0];
             newCol += offsets[i][1];

@@ -18,7 +18,7 @@ class Move {
     // * The capture promotion variable stores promoted piece data when a pawn capture leads to a promotion
 
     Move();
-    Move(int, int, MoveFlag = MoveFlag::CAPTURE, Piece = Piece::None);
+    Move(int, int, MoveFlag = MoveFlag::CAPTURE, Piece = Piece::NoPiece);
     Move(int, int, MoveFlag, int);
     bool flag() const;
     short piece() const;
