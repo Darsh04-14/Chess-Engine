@@ -73,6 +73,7 @@ class Chess : public Game {
     void setGameState();
     void printGameState();
     bool end();
+    int check();
     short getKing(Colour);
     int perft(int, int = 0);
     void resignPlayer();

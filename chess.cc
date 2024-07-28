@@ -420,6 +420,8 @@ void Chess::printGameState() {
 
 bool Chess::end() { return (gameState & 24) ? gameState : 0; }
 
+int Chess::check() { return (gameState & 6) ? (gameState << 1) : 0; }
+
 void Chess::resignPlayer() {
     string enemyColour = colourToMove == White ? "Black" : "White";
     cout << enemyColour << " wins!\n";
