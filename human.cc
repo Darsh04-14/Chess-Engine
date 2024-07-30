@@ -7,7 +7,7 @@ bool Human::notify() {
         chess->unmakeMove();
         chess->unmakeMove();
         chess->generateLegalMoves();
-        return true;
+        return false;
     }
     if (cmd == "resign") {
         chess->resign();
