@@ -447,6 +447,7 @@ vector<short> Chess::getBoard() { return vector<short>(board, board + 64); }
 Colour Chess::getCurrentPlayer() { return colourToMove; }
 
 void Chess::clear() {
+    fill(&castlingRights[0][0], &castlingRights[0][0] + 4, -2);
     for (int i = 0; i < 64; ++i) board[i] = NoPiece;
     colourToMove = White;
 }
@@ -499,10 +500,12 @@ bool Chess::validBoard() {
 }
 
 void Chess::setColour(string colour) {
-    if (colour == "Black")
+    if (colour == "Black" || colour == "black" || colour == "b")
         colourToMove = Black;
-    else if (colour == "White")
+    else if (colour == "White" || colour == "white" || colour == "w")
         colourToMove = White;
+    else
+        cout << "Invalid colour!\n";
 }
 
 void Chess::resign() {

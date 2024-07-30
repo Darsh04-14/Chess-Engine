@@ -72,30 +72,36 @@ int Engine4::moveEvaluation(int depth, int alpha, int beta, int moveCounter = 0)
 }
 
 bool Engine4::notify() {
-    vector<Move> currentMoves = chess->getLegalMoves();
+    string cmd;
+    cin >> cmd;
+    if (cmd == "move") {
+        vector<Move> currentMoves = chess->getLegalMoves();
 
-    cmp c{chess->getBoard()};
-    sort(currentMoves.begin(), currentMoves.end(), c);
+        cmp c{chess->getBoard()};
+        sort(currentMoves.begin(), currentMoves.end(), c);
 
-    if (!currentMoves.size()) return false;
+        if (!currentMoves.size()) return false;
 
-    Move bestMove = currentMoves[0];
+        Move bestMove = currentMoves[0];
 
-    nodeCount = 0;
-    int alpha = -2e6;
-    for (int i = 0; i < currentMoves.size(); ++i) {
-        chess->makeMove(currentMoves[i]);
-        int value = -moveEvaluation(MAX_DEPTH, -2e6, -alpha);
-        if (value > alpha) {
-            bestMove = currentMoves[i];
-            alpha = value;
+        nodeCount = 0;
+        int alpha = -2e6;
+        for (int i = 0; i < currentMoves.size(); ++i) {
+            chess->makeMove(currentMoves[i]);
+            int value = -moveEvaluation(MAX_DEPTH, -2e6, -alpha);
+            if (value > alpha) {
+                bestMove = currentMoves[i];
+                alpha = value;
+            }
+            chess->unmakeMove();
         }
-        chess->unmakeMove();
-    }
 
-    // cout << "Best evaluation: " << alpha << " | Nodes searched: " << nodeCount << "\n";
+        // cout << "Best evaluation: " << alpha << " | Nodes searched: " << nodeCount << "\n";
 
-    chess->makeMove(bestMove);
-    chess->generateLegalMoves();
-    return true;
+        chess->makeMove(bestMove);
+        chess->generateLegalMoves();
+        return true;
+    } else
+        cout << "Invalid command!\n";
+    return false;
 }

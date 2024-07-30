@@ -18,7 +18,7 @@ class Chess : public Game {
     static const short NUM_ROWS = 8;
     static const short NUM_COLS = 8;
 
-    Move legalMoves[225];  // Max number of pseudolegal moves in any position
+    Move legalMoves[250];  // Max number of pseudolegal moves in any position
     short legalMovesLen;
 
     // Keep track of previous moves for undo functionality

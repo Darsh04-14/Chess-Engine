@@ -55,6 +55,7 @@ int main() {
             Player *player1 = getPlayer(p1, chess), *player2 = getPlayer(p2, chess);
             if (!player1 || !player2) {
                 cout << "Error: Players can only be human, computer[1], computer[2], computer[3] or computer[4]\n";
+            } else if (cin.fail()) {
             } else {
                 chess->addPlayers(player1, player2);
                 chess->print();
@@ -112,8 +113,11 @@ int main() {
                     if (!chess->validBoard()) {
                         cout << "Invalid board!\n";
                     } else {
+                        chess->generateLegalMoves();
                         break;
                     }
+                } else if (cin.fail()) {
+                    break;
                 } else {
                     cout << "Invalid command!\n";
                 }
