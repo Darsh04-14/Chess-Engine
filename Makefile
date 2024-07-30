@@ -12,4 +12,4 @@ ${EXEC}: ${OBJECTS}
 	${CXX} ${CXXFLAGS} -I/opt/X11/include -c $< -o $@
 
 clean:
-	rm -f ${EXEC} ${OBJECTS} ${DEPENDS}
+	rm -f ${OBJECTS} ${DEPENDS}

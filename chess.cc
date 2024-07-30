@@ -396,17 +396,30 @@ void Chess::setGameState() {
     Colour enemyColour = Colour(colourToMove ^ ColourType);
     string colour = colourToMove == White ? "White" : "Black";
 
-    bool pieceFound = false;
+    int pieceCount = 0, whiteBishopCount = 0, blackBishopCount = 0, blackKnightCount = 0, whiteKnightCount = 0;
     for (int i = 0; i < 64; ++i) {
-        if ((board[i] & PieceType) != King && (board[i] & PieceType) != NoPiece) {
-            pieceFound = true;
-            break;
-        }
+        Colour pieceColour = Colour(board[i] & ColourType);
+        Piece piece = Piece(board[i] & PieceType);
+        if (piece == Knight) {
+            if (pieceColour == White) ++whiteKnightCount;
+            if (pieceColour == Black) ++blackKnightCount;
+        } else if (piece == Bishop) {
+            if (pieceColour == White) ++whiteBishopCount;
+            if (pieceColour == Black) ++blackBishopCount;
+        } else if (piece != King && piece != NoPiece)
+            pieceCount++;
     }
 
-    if (!pieceFound) {
-        gameState = White | Black;
-        return;
+    if (!pieceCount) {
+        bool whiteDraw =
+            (!whiteBishopCount && !whiteKnightCount) || ((whiteBishopCount == 1) ^ (whiteKnightCount == 1));
+        bool blackDraw =
+            (!blackBishopCount && !blackKnightCount) || ((blackBishopCount == 1) ^ (blackKnightCount == 1));
+
+        if (whiteDraw && blackDraw) {
+            gameState = White | Black;
+            return;
+        }
     }
 
     if (legalMovesLen) {

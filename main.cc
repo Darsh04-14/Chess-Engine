@@ -83,6 +83,8 @@ int main() {
             }
         } else if (cmd == "setup") {
             chess->clear();
+            drawBoard(window, *chess, 80);
+            XFlush(window.display);
             while (true) {
                 string s;
                 cin >> s;
