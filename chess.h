@@ -91,7 +91,6 @@ class Chess : public Game {
     Piece getPieceAt(int row, int col) const;  // New method
     short getEmpty() const;                    // New method
     short getBlack() const;                    // New method
-    friend ostream& operator<<(ostream&, Chess&);
 };
 
 #endif

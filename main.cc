@@ -51,9 +51,7 @@ int main() {
         cin >> cmd;
         if (cmd == "game") {
             string p1, p2;
-            // cout << "Here\n";
             cin >> p1 >> p2;
-            // cout << "Here2\n";
             Player *player1 = getPlayer(p1, chess), *player2 = getPlayer(p2, chess);
             if (!player1 || !player2) {
                 cout << "Error: Players can only be human, computer[1], computer[2], computer[3] or computer[4]\n";
