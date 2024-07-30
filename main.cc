@@ -42,7 +42,6 @@ int main() {
     ChessWindow window;
 
     XMapWindow(window.display, window.win);
-    drawBoard(window, *chess, 80);
     XFlush(window.display);
 
     double whiteScore = 0, blackScore = 0;

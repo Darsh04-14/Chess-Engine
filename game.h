@@ -17,8 +17,9 @@ class Game {
         players[1] = p2;
     }
     void notifyPlayer() {
-        players[currentPlayer]->notify();
-        currentPlayer = !currentPlayer;
+        if (players[currentPlayer]->notify()) {
+            currentPlayer = !currentPlayer;
+        }
     }
     virtual bool playMove(string, string) = 0;
     virtual bool playMove(short, short) = 0;

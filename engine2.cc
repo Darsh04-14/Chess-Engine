@@ -1,6 +1,6 @@
 #include "engine2.h"
 
-void Engine2::notify() {
+bool Engine2::notify() {
     vector<Move> currentMoves = chess->getLegalMoves();
     Colour currentColour = chess->getCurrentPlayer();
     Colour enemyColour = Colour((3 << 3) ^ currentColour);
@@ -11,7 +11,7 @@ void Engine2::notify() {
         chess->makeMove(i);
         chess->generateLegalMoves();
         if (chess->isSquareAttacked(currentColour, enemyKingIndex)) {
-            return;
+            return true;
         }
         chess->unmakeMove();
     }
@@ -20,7 +20,7 @@ void Engine2::notify() {
         if (i.isCapture()) {
             chess->makeMove(i);
             chess->generateLegalMoves();
-            return;
+            return true;
         }
     }
 
@@ -28,4 +28,6 @@ void Engine2::notify() {
     Move newMov = currentMoves[randidex];
     chess->makeMove(newMov);
     chess->generateLegalMoves();
+
+    return true;
 }

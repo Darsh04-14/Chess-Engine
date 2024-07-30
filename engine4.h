@@ -34,7 +34,7 @@ class Engine4 : public Player {
 
    public:
     Engine4(Chess *g) : Player{g} { srand(time(0)); }
-    void notify() override;
+    bool notify() override;
 };
 
 #endif

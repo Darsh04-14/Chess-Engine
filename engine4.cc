@@ -71,13 +71,13 @@ int Engine4::moveEvaluation(int depth, int alpha, int beta, int moveCounter = 0)
     return valuation;
 }
 
-void Engine4::notify() {
+bool Engine4::notify() {
     vector<Move> currentMoves = chess->getLegalMoves();
 
     cmp c{chess->getBoard()};
     sort(currentMoves.begin(), currentMoves.end(), c);
 
-    if (!currentMoves.size()) return;
+    if (!currentMoves.size()) return false;
 
     Move bestMove = currentMoves[0];
 
@@ -97,4 +97,5 @@ void Engine4::notify() {
 
     chess->makeMove(bestMove);
     chess->generateLegalMoves();
+    return true;
 }

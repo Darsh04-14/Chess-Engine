@@ -1,6 +1,6 @@
 #include "engine3.h"
 
-void Engine3::notify() {
+bool Engine3::notify() {
     vector<Move> currentMoves = chess->getLegalMoves();
     Colour currentColour = chess->getCurrentPlayer();
     Colour enemyColour = Colour(ColourType ^ currentColour);
@@ -11,7 +11,7 @@ void Engine3::notify() {
         chess->makeMove(i);
         chess->generateLegalMoves();
         if (chess->isSquareAttacked(currentColour, enemyKingIndex)) {
-            return;
+            return true;
         }
         chess->unmakeMove();
     }
@@ -20,7 +20,7 @@ void Engine3::notify() {
         if (i.isCapture()) {
             chess->makeMove(i);
             chess->generateLegalMoves();
-            return;
+            return true;
         }
     }
 
@@ -29,7 +29,7 @@ void Engine3::notify() {
         if (chess->isSquareAttacked(enemyColour, i.start()) && !chess->isSquareAttacked(enemyColour, i.target())) {
             chess->makeMove(i);
             chess->generateLegalMoves();
-            return;
+            return true;
         }
     }
 
@@ -37,4 +37,5 @@ void Engine3::notify() {
     Move newMov = currentMoves[randidex];
     chess->makeMove(newMov);
     chess->generateLegalMoves();
+    return true;
 }

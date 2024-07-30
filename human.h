@@ -7,7 +7,7 @@
 class Human : public Player {
    public:
     Human(Chess *g) : Player{g} {}
-    void notify() override;
+    bool notify() override;
 };
 
 #endif

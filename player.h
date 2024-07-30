@@ -11,7 +11,7 @@ class Player {
 
    public:
     Player(Chess* g) : chess{g} {};
-    virtual void notify() = 0;
+    virtual bool notify() = 0;
 };
 
 #endif
