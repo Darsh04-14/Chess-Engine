@@ -525,3 +525,5 @@ void Chess::resign() {
     Colour enemyColour = Colour(colourToMove ^ ColourType);
     gameState = enemyColour;
 }
+
+void Chess::draw() { gameState = White | Black; }

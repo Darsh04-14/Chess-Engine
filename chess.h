@@ -86,6 +86,7 @@ class Chess : public Game {
     bool validBoard();
     void setColour(string);
     void resign();
+    void draw();
     vector<Move> getLegalMoves() override;
     vector<short> getBoard() override;
     Piece getPieceAt(int row, int col) const;  // New method

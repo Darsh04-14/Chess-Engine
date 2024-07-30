@@ -101,6 +101,8 @@ bool Engine4::notify() {
         chess->makeMove(bestMove);
         chess->generateLegalMoves();
         return true;
+    } else if (cin.fail()) {
+        chess->draw();
     } else
         cout << "Invalid command!\n";
     return false;

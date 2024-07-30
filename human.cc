@@ -20,6 +20,9 @@ bool Human::notify() {
             return false;
         }
         return true;
+    } else if (cin.fail()) {
+        chess->draw();
+        return true;
     } else {
         cout << "Invalid command!\n";
         return false;

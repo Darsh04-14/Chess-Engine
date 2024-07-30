@@ -11,7 +11,10 @@ bool Engine1::notify() {
             chess->playMove(newMov.start(), newMov.target());
         }
         return true;
-    } else
+    } else if (cin.fail()) {
+        chess->draw();
+    } else {
         cout << "Invalid command!\n";
+    }
     return false;
 }
