@@ -47,6 +47,7 @@ int main() {
     double whiteScore = 0, blackScore = 0;
     string cmd;
     while (true) {
+        cmd = "q";
         cin >> cmd;
         if (cmd == "game") {
             string p1, p2;
@@ -119,7 +120,7 @@ int main() {
                 drawBoard(window, *chess, 80);
                 XFlush(window.display);
             }
-        } else if (cin.fail()) {
+        } else if (cin.fail() || cmd == "q") {
             cout << "White Score: " << whiteScore << "\nBlack Score: " << blackScore << "\n";
             break;
         } else {
