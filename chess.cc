@@ -36,17 +36,12 @@ Piece Chess::getPiece(char a) {
         return Piece::NoPiece;
 }
 
-Piece Chess::getPieceAt(int row, int col) const {
-    return static_cast<Piece>(board[row * 8 + col]);
-}
+Piece Chess::getPieceAt(int row, int col) const { return static_cast<Piece>(board[row * 8 + col]); }
 
-short Chess::getEmpty() const {
-    return static_cast<short>(Piece::NoPiece);
-}
-
+short Chess::getEmpty() const { return static_cast<short>(Piece::NoPiece); }
 
 short Chess::getBlack() const {
-return Black;  // Adjust this based on your actual implementation
+    return Black;  // Adjust this based on your actual implementation
 }
 
 short Chess::getKing(Colour c) {
@@ -122,7 +117,8 @@ void Chess::addMove(const Move& m) {
     if (!getAttackMasks && (board[m.start()] & ColourType) != (board[m.target()] & ColourType)) {
         // Make sure if it's a pawn diagonal capture then it's actually capturing something
         bool isDiagonal = abs(abs(m.target() - m.start()) - 8) == 1;
-        if ((board[m.start()] & PieceType) == Pawn && isDiagonal && !m.isEnPassant() && m.isCapture() == NoPiece) return;
+        if ((board[m.start()] & PieceType) == Pawn && isDiagonal && !m.isEnPassant() && m.isCapture() == NoPiece)
+            return;
         legalMoves[legalMovesLen++] = m;
     } else {
         bool isPawnStraight = (board[m.start()] & PieceType) == Pawn && (m.target() - m.start()) % 8 == 0;
@@ -292,17 +288,21 @@ bool Chess::playMove(short startIndex, short targetIndex) {
             return true;
         }
     }
-    cout << "Invalid Move!\n";
     return false;
 }
 
+int Chess::getPosition(string pos) {
+    if (pos.length() != 2) return -1;
+    int ind = (pos[1] - '1') * 8 + pos[0] - 'a';
+    if (ind < 0 || ind > 63) return -1;
+    return ind;
+}
+
 bool Chess::playMove(string start, string target) {
-    if (start.length() != 2 || target.length() != 2) return false;
+    short startIndex = getPosition(start);
+    short targetIndex = getPosition(target);
 
-    short startIndex = (start[1] - '1') * 8 + start[0] - 'a';
-    short targetIndex = (target[1] - '1') * 8 + target[0] - 'a';
-
-    if (startIndex < 0 || startIndex > 63 || targetIndex < 0 || targetIndex > 63) return false;
+    if (startIndex == -1 || targetIndex == -1) return false;
 
     return playMove(startIndex, targetIndex);
 }
@@ -398,7 +398,7 @@ void Chess::setGameState() {
 
     bool pieceFound = false;
     for (int i = 0; i < 64; ++i) {
-        if ((board[i] & PieceType) != King) {
+        if ((board[i] & PieceType) != King && (board[i] & PieceType) != NoPiece) {
             pieceFound = true;
             break;
         }
@@ -445,3 +445,67 @@ vector<Move> Chess::getLegalMoves() { return vector<Move>(legalMoves, legalMoves
 vector<short> Chess::getBoard() { return vector<short>(board, board + 64); }
 
 Colour Chess::getCurrentPlayer() { return colourToMove; }
+
+void Chess::clear() {
+    for (int i = 0; i < 64; ++i) board[i] = NoPiece;
+    colourToMove = White;
+}
+
+bool Chess::addPiece(char p, string pos) {
+    if (!isalpha(p)) return false;
+    int ind = getPosition(pos);
+    Piece newPiece = getPiece(p);
+    if (ind == -1 || newPiece == NoPiece) return false;
+    Colour pieceColour = (p == toupper(p)) ? White : Black;
+    board[ind] = pieceColour | newPiece;
+    return true;
+}
+
+bool Chess::removePiece(string pos) {
+    int ind = getPosition(pos);
+    if (ind == -1) return false;
+    board[ind] = NoPiece;
+    return true;
+}
+
+bool Chess::validBoard() {
+    bool whiteKing = 0, blackKing = 0;
+    for (int i = 0; i < 64; ++i) {
+        if (board[i] == (White | King)) {
+            if (whiteKing) return false;
+            whiteKing = true;
+        }
+        if (board[i] == (Black | King)) {
+            if (blackKing) return false;
+            blackKing = true;
+        }
+    }
+
+    if (!whiteKing || !blackKing) return false;
+
+    for (int i = 0; i < 8; ++i) {
+        if ((board[i] & PieceType) == Pawn) return false;
+        if ((board[i + 56] & PieceType) == Pawn) return false;
+    }
+
+    generateLegalMoves();
+    if (check() || end()) return false;
+    colourToMove = Colour(colourToMove ^ ColourType);
+    generateLegalMoves();
+    if (check() || end()) return false;
+    colourToMove = Colour(colourToMove ^ ColourType);
+
+    return true;
+}
+
+void Chess::setColour(string colour) {
+    if (colour == "Black")
+        colourToMove = Black;
+    else if (colour == "White")
+        colourToMove = White;
+}
+
+void Chess::resign() {
+    Colour enemyColour = Colour(colourToMove ^ ColourType);
+    gameState = enemyColour;
+}

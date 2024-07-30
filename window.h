@@ -3,10 +3,11 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+
 #include "chess.h"
 
 class ChessWindow {
-public:
+   public:
     Display* display;
     int screen;
     Window win;
@@ -21,5 +22,7 @@ public:
 };
 
 void drawBoard(ChessWindow& window, const Chess& game, int squareSize);
+
+// https://www.x.org/releases/X11R7.5/doc/libX11/libX11.html
 
 #endif

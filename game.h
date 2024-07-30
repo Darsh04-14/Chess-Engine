@@ -9,13 +9,17 @@ class Move;
 
 class Game {
     Player *players[2];
+    bool currentPlayer = 0;
 
    public:
     void addPlayers(Player *p1, Player *p2) {
         players[0] = p1;
         players[1] = p2;
     }
-    void notifyPlayer(int ind) { players[ind]->notify(); }
+    void notifyPlayer() {
+        players[currentPlayer]->notify();
+        currentPlayer = !currentPlayer;
+    }
     virtual bool playMove(string, string) = 0;
     virtual bool playMove(short, short) = 0;
     virtual vector<Move> getLegalMoves() = 0;

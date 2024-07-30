@@ -1,6 +1,7 @@
 #ifndef CHESS_H
 #define CHESS_H
 
+#include <cstring>
 #include <iostream>
 #include <vector>
 using namespace std;
@@ -57,6 +58,8 @@ class Chess : public Game {
     // Responsible for adding moves to vector, updating captureMask state, and filtering out any illegal moves
     void addMove(const Move&);
 
+    int getPosition(string);
+
    public:
     Chess();
     Chess(string);
@@ -77,13 +80,18 @@ class Chess : public Game {
     short getKing(Colour);
     int perft(int, int = 0);
     void resignPlayer();
+    void clear();
+    bool addPiece(char, string);
+    bool removePiece(string);
+    bool validBoard();
+    void setColour(string);
+    void resign();
     vector<Move> getLegalMoves() override;
     vector<short> getBoard() override;
     Piece getPieceAt(int row, int col) const;  // New method
-    short getEmpty() const;  // New method 
-    short getBlack() const;  // New method
+    short getEmpty() const;                    // New method
+    short getBlack() const;                    // New method
     friend ostream& operator<<(ostream&, Chess&);
-    
 };
 
 #endif

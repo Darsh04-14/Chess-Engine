@@ -1,11 +1,12 @@
 #include <iostream>
+
 #include "chess.h"
-#include "window.h"
 #include "engine1.h"
 #include "engine2.h"
 #include "engine3.h"
 #include "engine4.h"
 #include "human.h"
+#include "window.h"
 
 using namespace std;
 
@@ -17,70 +18,105 @@ void displayMenu() {
     cout << "Enter your choice: ";
 }
 
+Player *getPlayer(string p, Chess *c) {
+    if (p == "human") {
+        return new Human{c};
+    } else if (p == "computer[1]") {
+        return new Engine1{c};
+    } else if (p == "computer[2]") {
+        return new Engine2{c};
+    } else if (p == "computer[3]") {
+        return new Engine3{c};
+    } else if (p == "computer[4]") {
+        return new Engine4{c};
+    } else {
+        return nullptr;
+    }
+}
+
 int main() {
-    string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    Chess *chess = new Chess(FEN);
+    // cout << "Enter FEN for game or 'd' for default setup: ";
+    string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+    Chess *chess = new Chess(defaultFEN);
     ChessWindow window;
 
-    // Ensure the window is mapped and ready
     XMapWindow(window.display, window.win);
+    drawBoard(window, *chess, 80);
     XFlush(window.display);
 
-    displayMenu();
-    int choice;
-    cin >> choice;
-
-    if (choice == 1) {
-        chess->addPlayers(new Human(chess), new Human(chess));
-    } else if (choice == 2) {
-        cout << "Select engine difficulty (1-4): ";
-        int engineChoice;
-        cin >> engineChoice;
-        switch (engineChoice) {
-            case 1:
-                chess->addPlayers(new Human(chess), new Engine1(chess));
-                break;
-            case 2:
-                chess->addPlayers(new Human(chess), new Engine2(chess));
-                break;
-            case 3:
-                chess->addPlayers(new Human(chess), new Engine3(chess));
-                break;
-            case 4:
-                chess->addPlayers(new Human(chess), new Engine4(chess));
-                break;
-            default:
-                cout << "Invalid choice, defaulting to Engine4." << endl;
-                chess->addPlayers(new Human(chess), new Engine4(chess));
-                break;
+    string cmd;
+    while (true) {
+        cin >> cmd;
+        if (cmd == "game") {
+            string p1, p2;
+            // cout << "Here\n";
+            cin >> p1 >> p2;
+            // cout << "Here2\n";
+            Player *player1 = getPlayer(p1, chess), *player2 = getPlayer(p2, chess);
+            if (!player1 || !player2) {
+                cout << "Error: Players can only be human, computer[1], computer[2], computer[3] or computer[4]\n";
+            } else {
+                chess->addPlayers(player1, player2);
+                chess->print();
+                drawBoard(window, *chess, 80);
+                XFlush(window.display);
+                while (!chess->end()) {
+                    chess->notifyPlayer();
+                    chess->print();
+                    chess->printGameState();
+                    drawBoard(window, *chess, 80);
+                    XFlush(window.display);
+                    cout << "\n";
+                }
+                chess = new Chess(defaultFEN);
+            }
+        } else if (cmd == "setup") {
+            chess->clear();
+            while (true) {
+                string s;
+                cin >> s;
+                if (s == "+") {
+                    char piece;
+                    string pos;
+                    cin >> piece >> pos;
+                    if (!chess->addPiece(piece, pos)) {
+                        cout << "Invalid piece or position.\n";
+                    }
+                    chess->print();
+                    drawBoard(window, *chess, 80);
+                    XFlush(window.display);
+                } else if (s == "-") {
+                    string pos;
+                    cin >> pos;
+                    if (!chess->removePiece(pos)) {
+                        cout << "";
+                    }
+                    chess->print();
+                    drawBoard(window, *chess, 80);
+                    XFlush(window.display);
+                } else if (s == "=") {
+                    string colour;
+                    cin >> colour;
+                    chess->setColour(colour);
+                } else if (s == "done") {
+                    if (!chess->validBoard()) {
+                        cout << "Invalid board!\n";
+                    } else {
+                        break;
+                    }
+                } else {
+                    cout << "Invalid command!\n";
+                }
+                drawBoard(window, *chess, 80);
+                XFlush(window.display);
+            }
+        } else if (cmd == "q") {
+            break;
+        } else {
+            cout << "Invalid command!";
         }
-    } else {
-        cout << "Invalid choice, defaulting to Player vs Player." << endl;
-        chess->addPlayers(new Human(chess), new Human(chess));
     }
 
-    // Clear and redraw the board immediately after mode selection
-    window.clear();
-    drawBoard(window, *chess, 80);  // Set the square size to 80
-    XFlush(window.display);
-    chess->print();  // Print the text-based board to the console
-    chess->printGameState();  // Print the game state to the console
-
-    bool currentPlayer = 0;
-
-    while (!chess->end()) {
-        chess->notifyPlayer(currentPlayer);
-
-        window.clear();
-        drawBoard(window, *chess, 80);  // Set the square size to 80
-        XFlush(window.display);
-
-        chess->print();  // Print the text-based board to the console
-        chess->printGameState();  // Print the game state to the console
-
-        currentPlayer = !currentPlayer;
-    }
-
-    delete chess;
     return 0;
 }
