@@ -431,7 +431,7 @@ void Chess::printGameState() {
         cout << "Black is in check.\n";
 }
 
-bool Chess::end() { return (gameState & 24) ? gameState : 0; }
+int Chess::end() { return (gameState & 24) ? gameState : 0; }
 
 int Chess::check() { return (gameState & 6) ? (gameState << 1) : 0; }
 

@@ -75,7 +75,7 @@ class Chess : public Game {
     void printCastleRights();
     void setGameState();
     void printGameState();
-    bool end();
+    int end();
     int check();
     short getKing(Colour);
     int perft(int, int = 0);

@@ -45,6 +45,7 @@ int main() {
     drawBoard(window, *chess, 80);
     XFlush(window.display);
 
+    double whiteScore = 0, blackScore = 0;
     string cmd;
     while (true) {
         cin >> cmd;
@@ -69,6 +70,16 @@ int main() {
                     XFlush(window.display);
                     cout << "\n";
                 }
+
+                if (chess->end() == White) {
+                    whiteScore += 1;
+                } else if (chess->end() == Black) {
+                    blackScore += 1;
+                } else {
+                    whiteScore += 0.5;
+                    blackScore += 0.5;
+                }
+
                 chess = new Chess(defaultFEN);
             }
         } else if (cmd == "setup") {
@@ -111,10 +122,11 @@ int main() {
                 drawBoard(window, *chess, 80);
                 XFlush(window.display);
             }
-        } else if (cmd == "q") {
+        } else if (cin.fail()) {
+            cout << "White Score: " << whiteScore << "\nBlack Score: " << blackScore << "\n";
             break;
         } else {
-            cout << "Invalid command!";
+            cout << "Invalid command!\n";
         }
     }
 
