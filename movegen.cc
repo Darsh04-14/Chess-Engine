@@ -56,8 +56,8 @@ void Chess::genKingMoves(short startIndex) {
 
 void Chess::genPawnMoves(short startIndex) {
     short row = startIndex / 8, col = startIndex % 8;
-    if (colourToMove == White) {                                                                     // white pawn
-        if (board[startIndex + 8] == NoPiece) {                                                         // initial position
+    if (colourToMove == White) {                 // white pawn
+        if (board[startIndex + 8] == NoPiece) {  // initial position
             if (row == 1 && board[startIndex + 16] == NoPiece) addMove({startIndex, startIndex + 16});  // move two
             if (row < 6)
                 addMove({startIndex, startIndex + 8});
@@ -109,8 +109,8 @@ void Chess::genPawnMoves(short startIndex) {
                 addMove({startIndex, startIndex + 9, MoveFlag::ENPASSANT});
             }
         }
-    } else {                                                                                         // black pawn
-        if (board[startIndex - 8] == NoPiece) {                                                         // initial position
+    } else {                                     // black pawn
+        if (board[startIndex - 8] == NoPiece) {  // initial position
             if (row == 6 && board[startIndex - 16] == NoPiece) addMove({startIndex, startIndex - 16});  // move two
             if (row > 1)
                 addMove({startIndex, startIndex - 8});
