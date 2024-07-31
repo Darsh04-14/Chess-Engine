@@ -32,7 +32,11 @@ bool Engine2::notify() {
         chess->makeMove(newMov);
         chess->generateLegalMoves();
         return true;
-    } else
-        cout << "Invalid command!\n";
+    } else if (cin.fail()) {
+        chess->draw();
+    } else {
+        std::cout << "Invalid command!\n";
+    }
+
     return false;
 }
