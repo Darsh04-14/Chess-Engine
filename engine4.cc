@@ -96,8 +96,6 @@ bool Engine4::notify() {
             chess->unmakeMove();
         }
 
-        // cout << "Best evaluation: " << alpha << " | Nodes searched: " << nodeCount << "\n";
-
         chess->makeMove(bestMove);
         chess->generateLegalMoves();
         return true;
