@@ -14,8 +14,9 @@ bool Engine4::cmp::operator()(const Move& lhs, const Move& rhs) {
 
 int Engine4::boardEvaluation() {
     Colour c = chess->getCurrentPlayer();
-    Colour enemyColour = Colour(c ^ PieceType);
+    Colour enemyColour = Colour(c ^ ColourType);
     vector<short> board = chess->getBoard();
+
     int score = 0;
     for (int i = 0; i < board.size(); ++i) {
         Piece piece = Piece(board[i] & PieceType);
@@ -26,29 +27,39 @@ int Engine4::boardEvaluation() {
                 if (!chess->isSquareAttacked(enemyColour, i)) {
                     score += pieceValue[piece - 1];
                 } else if (chess->isSquareAttacked(c, i)) {
-                    score += pieceValue[piece - 1] / 2;
+                    score += int(pieceValue[piece - 1] / (1.4));
                 } else {
                     score += pieceValue[piece - 1] / 4;
+                }
+                if (chess->movesPlayed() >= 15 && piece == Pawn) {
+                    score += (i / 8) * 10;
                 }
             } else {
                 if (!chess->isSquareAttacked(c, i)) {
                     score -= pieceValue[piece - 1];
                 } else if (chess->isSquareAttacked(enemyColour, i)) {
-                    score -= pieceValue[piece - 1] / 2;
+                    score -= int(pieceValue[piece - 1] / (1.6));
                 } else {
-                    score -= pieceValue[piece - 1] / 4;
+                    score -= pieceValue[piece - 1] / 16;
+                }
+                if (chess->movesPlayed() >= 15 && piece == Pawn) {
+                    score -= (i / 8) * 10;
                 }
             }
         }
+
+        if (chess->isSquareAttacked(c, i)) score += SQUARE_VALUE;
+        if (chess->isSquareAttacked(enemyColour, i)) score -= SQUARE_VALUE;
     }
+
     return score;
 }
 
 int Engine4::moveEvaluation(int depth, int alpha, int beta, int moveCounter = 0) {
     chess->generateLegalMoves();
-    if (chess->end()) return chess->end() ? (-2e6 + moveCounter) : 0;
+    if (chess->end()) return chess->end() != (White | Black) ? (-2e6 + moveCounter) : 0;
 
-    if (chess->check() && moveCounter <= MAX_DEPTH + 4) depth += 1;
+    if (chess->check() && moveCounter <= MAX_DEPTH + 10) depth += 1;
 
     if (!depth) {
         ++nodeCount;
@@ -95,6 +106,8 @@ bool Engine4::notify() {
             }
             chess->unmakeMove();
         }
+
+        cout << "Best evaluation: " << alpha << " nodes searched " << nodeCount << "\n";
 
         chess->makeMove(bestMove);
         chess->generateLegalMoves();

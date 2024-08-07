@@ -78,6 +78,7 @@ class Chess : public Game {
     int end();
     int check();
     short getKing(Colour);
+    int movesPlayed();
     int perft(int, int = 0);
     void resignPlayer();
     void clear();

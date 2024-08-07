@@ -13,6 +13,7 @@
 #include "player.h"
 #include "types.h"
 
+#define SQUARE_VALUE 10
 #define PAWN_VALUE 126
 #define KNIGHT_VALUE 781
 #define BISHOP_VALUE 825

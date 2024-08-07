@@ -526,4 +526,6 @@ void Chess::resign() {
     gameState = enemyColour;
 }
 
+int Chess::movesPlayed() { return previousMoves.size(); }
+
 void Chess::draw() { gameState = White | Black; }
