@@ -12,6 +12,10 @@ bool Engine4::cmp::operator()(const Move& lhs, const Move& rhs) {
     return valueA > valueB;
 }
 
+bool Engine4::PairCmp::operator()(const pair<int, Move>& lhs, const pair<int, Move>& rhs) {
+    return lhs.first > rhs.first;
+}
+
 int Engine4::boardEvaluation() {
     Colour c = chess->getCurrentPlayer();
     Colour enemyColour = Colour(c ^ ColourType);
@@ -88,23 +92,28 @@ bool Engine4::notify() {
     if (cmd == "move") {
         vector<Move> currentMoves = chess->getLegalMoves();
 
-        cmp c{chess->getBoard()};
-        sort(currentMoves.begin(), currentMoves.end(), c);
-
         if (!currentMoves.size()) return false;
 
-        Move bestMove = currentMoves[0];
+        vector<pair<int, Move>> moves;
+        for (auto& i : currentMoves) moves.push_back({0, i});
 
-        nodeCount = 0;
-        int alpha = -2e6;
-        for (int i = 0; i < currentMoves.size(); ++i) {
-            chess->makeMove(currentMoves[i]);
-            int value = -moveEvaluation(MAX_DEPTH, -2e6, -alpha);
-            if (value > alpha) {
-                bestMove = currentMoves[i];
-                alpha = value;
+        Move bestMove;
+        int alpha;
+        for (int i = 0; i <= MAX_DEPTH; ++i) {
+            nodeCount = 0;
+            bestMove = moves[0].second;
+            alpha = -2e6;
+            for (int j = 0; j < moves.size(); ++j) {
+                chess->makeMove(moves[i].second);
+                int value = -moveEvaluation(i, -2e6, -alpha);
+                moves[i].first = value;
+                if (value > alpha) {
+                    bestMove = moves[i].second;
+                    alpha = value;
+                }
+                chess->unmakeMove();
             }
-            chess->unmakeMove();
+            sort(moves.begin(), moves.end(), PairCmp());
         }
 
         cout << "Best evaluation: " << alpha << " nodes searched " << nodeCount << "\n";

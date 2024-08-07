@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -MMD
+CXXFLAGS = -std=c++20 -Wall -MMD
 EXEC = chess
 TEST_EXEC = chesstest
 OBJECTS = window.o chess.o main.o movegen.o move.o human.o engine1.o engine2.o engine3.o engine4.o

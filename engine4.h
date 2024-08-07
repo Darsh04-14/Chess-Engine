@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <utility>
 #include <vector>
 
 #include "chess.h"
@@ -31,6 +32,10 @@ class Engine4 : public Player {
         vector<short> board;
         cmp(const vector<short> &b) : board{b} {};
         bool operator()(const Move &, const Move &);
+    };
+
+    struct PairCmp {
+        bool operator()(const pair<int, Move> &, const pair<int, Move> &);
     };
 
    public:
