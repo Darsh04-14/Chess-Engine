@@ -3,18 +3,18 @@ using namespace std;
 
 #include "chess.h"
 
-void Chess::getAttackSquares() {
-    getAttackMasks = true;
+// void Chess::getAttackSquares() {
+//     getAttackMasks = true;
 
-    attackMask[0] = attackMask[1] = 0;
+//     attackMask[0] = attackMask[1] = 0;
 
-    for (int i = 0; i < 2; ++i) {
-        generatePseudoLegalMoves();
-        colourToMove = Colour(colourToMove ^ ColourType);
-    }
+//     for (int i = 0; i < 2; ++i) {
+//         generatePseudoLegalMoves();
+//         colourToMove = Colour(colourToMove ^ ColourType);
+//     }
 
-    getAttackMasks = false;
-}
+//     getAttackMasks = false;
+// }
 
 bool Chess::isSquareAttacked(short colour, short index) { return attackMask[colour >> 4] & ((ULL)1 << index); }
 

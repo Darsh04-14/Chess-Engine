@@ -94,21 +94,24 @@ bool Engine4::notify() {
 
         if (!currentMoves.size()) return false;
 
+        cmp c{chess->getBoard()};
+        sort(currentMoves.begin(), currentMoves.end(), c);
+
         vector<pair<int, Move>> moves;
         for (auto& i : currentMoves) moves.push_back({0, i});
 
         Move bestMove;
         int alpha;
-        for (int i = 0; i <= MAX_DEPTH; ++i) {
+        for (int d = 0; d <= MAX_DEPTH; ++d) {
             nodeCount = 0;
             bestMove = moves[0].second;
             alpha = -2e6;
             for (int j = 0; j < moves.size(); ++j) {
-                chess->makeMove(moves[i].second);
-                int value = -moveEvaluation(i, -2e6, -alpha);
-                moves[i].first = value;
+                chess->makeMove(moves[j].second);
+                int value = -moveEvaluation(d, -2e6, -alpha);
+                moves[j].first = value;
                 if (value > alpha) {
-                    bestMove = moves[i].second;
+                    bestMove = moves[j].second;
                     alpha = value;
                 }
                 chess->unmakeMove();
