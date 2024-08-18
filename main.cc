@@ -10,14 +10,6 @@
 
 using namespace std;
 
-void displayMenu() {
-    cout << "Welcome to Chess!" << endl;
-    cout << "Select mode:" << endl;
-    cout << "1. Player vs Player" << endl;
-    cout << "2. Player vs Engine" << endl;
-    cout << "Enter your choice: ";
-}
-
 Player *getPlayer(string p, Chess *c) {
     if (p == "human") {
         return new Human{c};
@@ -33,6 +25,8 @@ Player *getPlayer(string p, Chess *c) {
         return nullptr;
     }
 }
+
+// 1r1qk1nr/p2n1p1p/2b3p1/2p1p1b1/7P/1PPQ4/P3PPP1/RN2KB1R w KQk - 0 15
 
 int main() {
     // cout << "Enter FEN for game or 'd' for default setup: ";

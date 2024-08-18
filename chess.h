@@ -89,7 +89,7 @@ class Chess : public Game {
     void resign();
     void draw();
     vector<Move> getLegalMoves() override;
-    vector<short> getBoard() override;
+    short* getBoard() override;
     Piece getPieceAt(int row, int col) const;  // New method
     short getEmpty() const;                    // New method
     short getBlack() const;                    // New method

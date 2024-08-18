@@ -1,3 +1,4 @@
+#include <chrono>
 #include <fstream>
 #include <iostream>
 using namespace std;
@@ -10,6 +11,7 @@ int main() {
     ifstream file("fenTests.in", fstream::in);
 
     string fen;
+    auto t1 = std::chrono::high_resolution_clock::now();
     while (getline(file, fen, '\n')) {
         int depth, expNodeCount;
         file >> depth >> expNodeCount;
@@ -26,4 +28,9 @@ int main() {
             cout << "Failed Test! " << fen << "\n";
         }
     }
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+    chrono::duration<double, std::milli> ms_double = (t2 - t1);
+
+    std::cout << ms_double.count() / 1000 << "s | " << ms_int.count() << "ms\n";
 }

@@ -455,7 +455,7 @@ void Chess::resignPlayer() {
 
 vector<Move> Chess::getLegalMoves() { return vector<Move>(legalMoves, legalMoves + legalMovesLen); }
 
-vector<short> Chess::getBoard() { return vector<short>(board, board + 64); }
+short* Chess::getBoard() { return board; }
 
 Colour Chess::getCurrentPlayer() { return colourToMove; }
 

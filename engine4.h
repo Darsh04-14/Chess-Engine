@@ -29,8 +29,8 @@ class Engine4 : public Player {
     int moveEvaluation(int, int, int, int);
 
     struct cmp {
-        vector<short> board;
-        cmp(const vector<short> &b) : board{b} {};
+        short *board;
+        cmp(short *b) : board{b} {};
         bool operator()(const Move &, const Move &);
     };
 
