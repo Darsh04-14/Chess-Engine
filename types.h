@@ -1,9 +1,10 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-// The special piece is simply needed to make the castle and en passant flag bits
-enum Piece { NoPiece, King, Queen, Knight, Bishop, Rook, Pawn, Special };
+enum Piece { NoPiece, King, Pawn, Knight, Bishop, Rook, Queen };
+
 enum Colour { White = 8, Black = 16 };
-enum MoveFlag { CAPTURE, PROMOTION, ENPASSANT = 14, CASTLE = 15 };
+
+enum MoveFlag { CAPTURE, PROMOTION, CAPTURE_PROMOTION, DOUBLE_PAWN_PUSH, ENPASSANT, LEFT_CASTLE, RIGHT_CASTLE };
 
 #endif
