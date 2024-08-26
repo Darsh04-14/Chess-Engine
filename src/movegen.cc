@@ -29,7 +29,7 @@ void Chess::genAttacks(Colour c) {
   }
 
   // Sliding pieces
-  ULL enemyPieces = colourBitboard(Colour(c ^ colourToMove)), friendPieces = colourBitboard(c);
+  ULL enemyPieces = colourBitboard(Colour(c ^ ColourType)), friendPieces = colourBitboard(c);
   for (int i = 4; i <= 6; ++i) {
     ULL bitboard = pieceBitboards[colourInd][i];
     while (bitboard) {
@@ -54,7 +54,7 @@ void Chess::genAttacks(Colour c) {
         attackBitboards[colourInd] |= getBishopAttack(square, mask1);
       else {
         attackBitboards[colourInd] |= getRookAttack(square, mask1);
-        attackBitboards[colourInd] |= getBishopAttack(square, mask1);
+        attackBitboards[colourInd] |= getBishopAttack(square, mask2);
       }
 
       popBit(bitboard, square);
@@ -64,27 +64,27 @@ void Chess::genAttacks(Colour c) {
 
 void Chess::genLegalMoves() {
   genAttacks(Colour(colourToMove ^ ColourType));
-  cout << "Checks[0]\n";
-  printBitboard(checks[0]);
-  cout << "Checks[1]\n";
-  printBitboard(checks[1]);
+  // cout << "Checks[0]\n";
+  // printBitboard(checks[0]);
+  // cout << "Checks[1]\n";
+  // printBitboard(checks[1]);
 
-  for (int i = 0; i < 64; i++) {
-    if (pinnedPieces[i]) {
-      cout << "Pinned piece at " << i << "\n";
-      printBitboard(pinnedPieces[i]);
-    }
-  }
+  // for (int i = 0; i < 64; i++) {
+  //   if (pinnedPieces[i]) {
+  //     cout << "Pinned piece at " << i << "\n";
+  //     printBitboard(pinnedPieces[i]);
+  //   }
+  // }
 
   legalMovesLen = 0;
 
   if (!checks[0] || !checks[1]) {
     genPawnMoves();
-    // genKnightMoves();
-    // genBishopMoves();
-    // genRookMoves();
+    genKnightMoves();
+    genBishopMoves();
+    genRookMoves();
     genQueenMoves();
-    // genCastleMove();
+    genCastleMove();
   }
   genKingMoves();
 }

@@ -31,6 +31,23 @@ Piece Chess::getPiece(char a) {
     return NoPiece;
 }
 
+char Chess::getChar(Piece p) {
+  if (p == King)
+    return 'k';
+  else if (p == Pawn)
+    return 'p';
+  else if (p == Knight)
+    return 'n';
+  else if (p == Bishop)
+    return 'b';
+  else if (p == Rook)
+    return 'r';
+  else if (p == Queen)
+    return 'q';
+  else
+    return '\0';
+}
+
 void Chess::setPiece(Colour c, Piece p, int i) {
   popPiece(i);
   board[i] = c | p;
@@ -172,29 +189,29 @@ int Chess::perft(int depth, int debug) {
     return 1;
   }
 
-  // genLegalMoves();
+  genLegalMoves();
 
   Move* currentlegalMoves = new Move[312];
 
-  // short currentMoveLen = legalMovesLen;
+  short currentMoveLen = legalMovesLen;
 
-  // cout << legalMovesLen << "\n";
-
-  // for (int i = 0; i < legalMovesLen; ++i) {
-  //   currentlegalMoves[i] = legalMoves[i];
-  // }
+  for (int i = 0; i < legalMovesLen; ++i) {
+    currentlegalMoves[i] = legalMoves[i];
+  }
 
   int count = 0;
-  // for (int i = 0; i < currentMoveLen; ++i) {
-  //   short s = currentlegalMoves[i].start(), t = currentlegalMoves[i].target();
-  //   makeMove(currentlegalMoves[i]);
-  //   int n = perft(depth - 1, debug);
-  //   count += n;
-  //   undoMove();
-  //   if (depth == debug) {
-  //     cout << char(s % 8 + 'a') << char(s / 8 + '1') << char(t % 8 + 'a') << char(t / 8 + '1') << ": " << n << "\n";
-  //   }
-  // }
+  for (int i = 0; i < currentMoveLen; ++i) {
+    short s = currentlegalMoves[i].start(), t = currentlegalMoves[i].target();
+    makeMove(currentlegalMoves[i]);
+    int n = perft(depth - 1, debug);
+    count += n;
+    undoMove();
+    if (depth == debug) {
+      cout << char(s % 8 + 'a') << char(s / 8 + '1') << char(t % 8 + 'a') << char(t / 8 + '1');
+      if (currentlegalMoves[i].promotion()) cout << getChar(currentlegalMoves[i].promotion());
+      cout << ": " << n << "\n";
+    }
+  }
   delete[] currentlegalMoves;
   currentlegalMoves = nullptr;
 

@@ -13,27 +13,27 @@ int main() {
   string fen;
   double ms_time = 0;
 
-  getline(file, fen, '\n');
-  int depth, expNodeCount;
-  file >> depth >> expNodeCount;
+  while (getline(file, fen, '\n')) {
+    int depth, expNodeCount;
+    file >> depth >> expNodeCount;
 
-  file.ignore(numeric_limits<streamsize>::max(), '\n');
+    file.ignore(numeric_limits<streamsize>::max(), '\n');
 
-  cout << "FEN: " << fen << "\n";
-  Chess chess = Chess(fen);
+    Chess chess = Chess(fen);
 
-  auto t1 = std::chrono::high_resolution_clock::now();
-  //   int nodeCount = chess.perft(depth);
+    auto t1 = std::chrono::high_resolution_clock::now();
+    int nodeCount = chess.perft(depth, 1);
 
-  // if (nodeCount == expNodeCount) {
-  //   cout << "Passed Test.\n";
-  // } else {
-  //   cout << "Failed Test! " << fen << "\n";
-  // }
+    // if (nodeCount == expNodeCount) {
+    //   cout << "Passed Test.\n";
+    // } else {
+    //   cout << "Failed Test! " << fen << "\n";
+    // }
 
-  auto t2 = std::chrono::high_resolution_clock::now();
-  chrono::duration<double, std::milli> ms_double = (t2 - t1);
-  ms_time += ms_double.count();
+    auto t2 = std::chrono::high_resolution_clock::now();
+    chrono::duration<double, std::milli> ms_double = (t2 - t1);
+    ms_time += ms_double.count();
+  }
 
   std::cout << ms_time / 1000 << "s | " << ms_time << "ms\n";
 }
