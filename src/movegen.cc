@@ -76,7 +76,7 @@ void Chess::genLegalMoves() {
   // genKnightMoves();
   // genBishopMoves();
   // genRookMoves();
-  genQueenMoves();
+  // genQueenMoves();
   // genCastleMove();
 }
 
@@ -252,16 +252,15 @@ void Chess::genQueenMoves() {
 
   while (bitboard) {
     int startSquare = lsbIndex(bitboard);
-    int row = startSquare / 8, col = startSquare % 8;
 
-    ULL rookMask = (255ULL << (row * 8)) | (72340172838076673ULL << col);
+    ULL rookMask = getPieceAttack(colourToMove, Rook, startSquare);
     rookMask ^= (friendBitboard | enemyBitboard) & rookMask;
 
-    ULL bishopMask = diagonals[row + col] | rdiagonals[7 - row + col];
+    ULL bishopMask = getPieceAttack(colourToMove, Bishop, startSquare);
     bishopMask ^= (friendBitboard | enemyBitboard) & bishopMask;
 
     ULL attacks = getRookAttack(startSquare, rookMask) | getBishopAttack(startSquare, bishopMask);
-    attacks ^= friendBitboard;
+    attacks ^= (friendBitboard & attacks);
 
     getAttacks(startSquare, attacks);
 
