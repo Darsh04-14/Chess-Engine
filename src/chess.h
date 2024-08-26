@@ -105,6 +105,7 @@ class Chess : public Game {
   void popPiece(int);
   void movePiece(int, int);
   Piece getPiece(char);
+  char getChar(Piece);
   ULL colourBitboard(Colour);
   void clearEdgeBits(short, ULL&);
   ULL getRookAttack(short, ULL);

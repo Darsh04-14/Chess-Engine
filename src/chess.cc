@@ -151,6 +151,5 @@ Chess::Chess(string FEN) : Chess() {
     }
   }
 
-  genLegalMoves();
-  cout << legalMovesLen << " legalMovesLen @ constructor\n";
+  // genLegalMoves();
 }
