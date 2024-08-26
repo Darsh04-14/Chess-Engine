@@ -24,6 +24,8 @@ int main() {
     auto t1 = std::chrono::high_resolution_clock::now();
     int nodeCount = chess.perft(depth, 1);
 
+    cout << "Found " << nodeCount << " legalMoves\n";
+
     // if (nodeCount == expNodeCount) {
     //   cout << "Passed Test.\n";
     // } else {

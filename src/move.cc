@@ -16,7 +16,7 @@ Move::Move(int start, int target, Piece captured, Piece promoted) : Move(start, 
   moveData |= (promoted << 18);
 }
 
-MoveFlag Move::flag() const { return MoveFlag(moveData & (7 << 12)); }
+MoveFlag Move::flag() const { return MoveFlag((moveData >> 12) & 7); }
 
 short Move::start() const { return moveData & positionMask; }
 short Move::target() const { return (moveData >> 6) & positionMask; }

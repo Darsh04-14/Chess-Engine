@@ -3,7 +3,10 @@
 void Chess::addMove(Move m) {
   if (pinnedPieces[m.start()] && !getBit(pinnedPieces[m.start()], m.target())) return;
 
-  if (checks[0] && !checks[1] && pieceAt(board, m.start()) != King && !getBit(checks[0], m.target())) return;
+  short offset = colourToMove == White ? -8 : 8;
+  short targetSquare = m.target() + (m.isEnPassant() ? offset : 0);
+
+  if (checks[0] && !checks[1] && pieceAt(board, m.start()) != King && !getBit(checks[0], targetSquare)) return;
 
   legalMoves[legalMovesLen++] = m;
 }
@@ -64,17 +67,20 @@ void Chess::genAttacks(Colour c) {
 
 void Chess::genLegalMoves() {
   genAttacks(Colour(colourToMove ^ ColourType));
-  // cout << "Checks[0]\n";
-  // printBitboard(checks[0]);
-  // cout << "Checks[1]\n";
-  // printBitboard(checks[1]);
 
-  // for (int i = 0; i < 64; i++) {
-  //   if (pinnedPieces[i]) {
-  //     cout << "Pinned piece at " << i << "\n";
-  //     printBitboard(pinnedPieces[i]);
-  //   }
-  // }
+  for (int i = 0; i < 2; ++i) {
+    if (checks[i]) {
+      cout << "checks[" << i << "]\n";
+      printBitboard(checks[i]);
+    }
+  }
+
+  for (int i = 0; i < 64; i++) {
+    if (pinnedPieces[i]) {
+      cout << "pinnedPieces[" << i << "]\n";
+      printBitboard(pinnedPieces[i]);
+    }
+  }
 
   legalMovesLen = 0;
 

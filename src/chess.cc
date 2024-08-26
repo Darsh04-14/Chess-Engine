@@ -144,10 +144,10 @@ Chess::Chess(string FEN) : Chess() {
     short targetIndex = (FEN[i + 1] - '1') * 8 + FEN[i] - 'a';
     if (FEN[i + 1] == '3') {
       targetIndex += 8;
-      previousMoves.push_back({targetIndex - 16, targetIndex});
+      previousMoves.push_back({targetIndex - 16, targetIndex, DOUBLE_PAWN_PUSH});
     } else {
       targetIndex -= 8;
-      previousMoves.push_back({targetIndex + 16, targetIndex});
+      previousMoves.push_back({targetIndex + 16, targetIndex, DOUBLE_PAWN_PUSH});
     }
   }
 
