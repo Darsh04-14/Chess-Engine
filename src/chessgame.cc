@@ -70,3 +70,10 @@ void Chess::undoMove() {
   previousMoves.pop_back();
   colourToMove = prevColour;
 }
+
+bool Chess::playMove(string start, string target) { return false; }
+bool Chess::playMove(short start, short target) { return false; }
+bool Chess::playMove(short index) { return false; }
+
+vector<Move> Chess::getLegalMoves() { return {}; }
+vector<short> Chess::getBoard() { return {}; }

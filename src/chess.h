@@ -120,7 +120,10 @@ class Chess : public Game {
 
   bool playMove(short, short) override;
   bool playMove(string, string) override;
-  bool playMove(short);
+  bool playMove(short) override;
+
+  vector<Move> getLegalMoves() override;
+  vector<short> getBoard() override;
 };
 
 #endif
