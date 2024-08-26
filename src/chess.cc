@@ -74,7 +74,7 @@ void Chess::kingAttackTable() {
   memset(kingAttacks, 0, sizeof(kingAttacks));
   short offsets[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
 
-  for (int sq = 52; sq <= 52; ++sq) {
+  for (int sq = 0; sq < 64; ++sq) {
     int row = sq / 8, col = sq % 8;
 
     for (int i = 0; i < 8; ++i) {
