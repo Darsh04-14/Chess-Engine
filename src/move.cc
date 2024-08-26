@@ -12,8 +12,8 @@ Move::Move(int start, int target, MoveFlag flag, Piece pieceType) : Move() {
 
 Move::Move(int start, int target, MoveFlag flag, int pieceType) : Move{start, target, flag, Piece(pieceType)} {}
 
-Move::Move(int start, int target, Piece captured, Piece promoted) : Move(start, target, CAPTURE_PROMOTION, promoted) {
-  moveData |= (captured << 15);
+Move::Move(int start, int target, Piece captured, Piece promoted) : Move(start, target, CAPTURE_PROMOTION, captured) {
+  moveData |= (promoted << 18);
 }
 
 MoveFlag Move::flag() const { return MoveFlag(moveData & (7 << 12)); }
