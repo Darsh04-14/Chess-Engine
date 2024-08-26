@@ -110,7 +110,7 @@ class Chess : public Game {
   void getAttacks(short, ULL);
   ULL getPieceAttack(Colour, Piece, short);
   void setCastlingRights(Move);
-  int perft(int, int);  // For testing purposes
+  void printBitboard(ULL);  // Debugging
 
   // Internal game functions
   void makeMove(Move);
@@ -126,6 +126,8 @@ class Chess : public Game {
 
   vector<Move> getLegalMoves() override;
   vector<short> getBoard() override;
+
+  int perft(int, int = 0);  // For testing purposes
 };
 
 #endif

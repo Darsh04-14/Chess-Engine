@@ -129,7 +129,7 @@ int main() {
           mp[mpKey] = bishopMaskValue;
       }
       if (j > n) {
-        std::cout << i << "\n";
+        std::cout << i << " " << mp.size() << "\n";
         for (auto i : mp) cout << i.first << " " << i.second << "\n";
         break;
       }

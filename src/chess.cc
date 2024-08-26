@@ -40,12 +40,12 @@ void Chess::knightAttackTable() {
 
 void Chess::rookAttackTable() {
   // Initializing rook attacks
-  std::ifstream rookAtt("/attacks/rookAttacks.txt");
+  std::ifstream rookAtt("./attacks/rookAttacks.txt");
 
   if (!rookAtt) std::cerr << "Could not open rook attacks!\n";
   for (int i = 0; i < 64; ++i) {
-    rookAtt >> rookMagics[i];
-    int N = (1 << rookShifts[i]);
+    int N;
+    rookAtt >> rookMagics[i] >> N;
     for (int j = 0; j < N; ++j) {
       ULL magicKey, magicValue;
       rookAtt >> magicKey >> magicValue;
@@ -56,11 +56,11 @@ void Chess::rookAttackTable() {
 }
 
 void Chess::bishopAttackTable() {
-  std::ifstream bishopAtt("/attacks/bishopAttacks.txt");
+  std::ifstream bishopAtt("./attacks/bishopAttacks.txt");
   if (!bishopAtt) std::cerr << "Could not open bishop attacks!\n";
   for (int i = 0; i < 64; ++i) {
-    bishopAtt >> bishopMagics[i];
-    int N = (1 << bishopShifts[i]);
+    int N;
+    bishopAtt >> bishopMagics[i] >> N;
     for (int j = 0; j < N; ++j) {
       ULL magicKey, magicValue;
       bishopAtt >> magicKey >> magicValue;
@@ -71,9 +71,10 @@ void Chess::bishopAttackTable() {
 }
 
 void Chess::kingAttackTable() {
+  memset(kingAttacks, 0, sizeof(kingAttacks));
   short offsets[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
 
-  for (int sq = 0; sq < 64; ++sq) {
+  for (int sq = 52; sq <= 52; ++sq) {
     int row = sq / 8, col = sq % 8;
 
     for (int i = 0; i < 8; ++i) {
@@ -82,7 +83,7 @@ void Chess::kingAttackTable() {
 
       if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
         int targetIndex = newRow * 8 + newCol;
-        kingAttacks[sq] |= (1ULL << targetIndex);
+        setBit(kingAttacks[sq], targetIndex);
       }
     }
   }
@@ -151,4 +152,5 @@ Chess::Chess(string FEN) : Chess() {
   }
 
   genLegalMoves();
+  cout << legalMovesLen << " legalMovesLen @ constructor\n";
 }

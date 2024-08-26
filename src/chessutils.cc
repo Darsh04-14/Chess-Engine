@@ -35,7 +35,7 @@ void Chess::setPiece(Colour c, Piece p, int i) {
   popPiece(i);
   board[i] = c | p;
   int colourInd = c == White ? WHITE_IND : BLACK_IND;
-  pieceBitboards[colourInd][p] |= (1 << i);
+  pieceBitboards[colourInd][p] |= (1ULL << i);
 }
 
 void Chess::popPiece(int i) {
@@ -43,7 +43,7 @@ void Chess::popPiece(int i) {
   Colour c = colourAt(board, i);
   int colourInd = c == White ? WHITE_IND : BLACK_IND;
   board[i] = NoPiece;
-  if (p != NoPiece) pieceBitboards[colourInd][p] ^= (1 << i);
+  if (p != NoPiece) pieceBitboards[colourInd][p] ^= (1ULL << i);
 }
 
 void Chess::movePiece(int start, int target) {
@@ -138,28 +138,38 @@ int Chess::perft(int depth, int debug) {
     return 1;
   }
 
-  genLegalMoves();
+  // genLegalMoves();
 
   Move* currentlegalMoves = new Move[312];
 
   short currentMoveLen = legalMovesLen;
 
-  for (int i = 0; i < legalMovesLen; ++i) {
-    currentlegalMoves[i] = legalMoves[i];
-  }
+  cout << legalMovesLen << "\n";
+
+  // for (int i = 0; i < legalMovesLen; ++i) {
+  //   currentlegalMoves[i] = legalMoves[i];
+  // }
 
   int count = 0;
-  for (int i = 0; i < currentMoveLen; ++i) {
-    short s = currentlegalMoves[i].start(), t = currentlegalMoves[i].target();
-    makeMove(currentlegalMoves[i]);
-    int n = perft(depth - 1, debug);
-    count += n;
-    undoMove();
-    if (depth == debug) {
-      cout << char(s % 8 + 'a') << char(s / 8 + '1') << char(t % 8 + 'a') << char(t / 8 + '1') << ": " << n << "\n";
-    }
-  }
+  // for (int i = 0; i < currentMoveLen; ++i) {
+  //   short s = currentlegalMoves[i].start(), t = currentlegalMoves[i].target();
+  //   makeMove(currentlegalMoves[i]);
+  //   int n = perft(depth - 1, debug);
+  //   count += n;
+  //   undoMove();
+  //   if (depth == debug) {
+  //     cout << char(s % 8 + 'a') << char(s / 8 + '1') << char(t % 8 + 'a') << char(t / 8 + '1') << ": " << n << "\n";
+  //   }
+  // }
   delete[] currentlegalMoves;
+  currentlegalMoves = nullptr;
 
   return count;
+}
+
+void Chess::printBitboard(ULL bitboard) {
+  for (int i = 7; i >= 0; --i) {
+    for (int j = 0; j < 8; ++j) cout << bool(bitboard & (1ULL << (i * 8 + j)));
+    cout << "\n";
+  }
 }

@@ -83,7 +83,6 @@ int RBits[64] = {12, 11, 11, 11, 11, 11, 11, 12, 11, 10, 10, 10, 10, 10, 10, 11,
 
 int main() {
   srand(time(NULL));
-  cout << "const ULL rookMagics[64] = {\n";
   for (int sq = 0; sq < 64; ++sq) {
     while (true) {
       ULL i = getRandom64Bit() & getRandom64Bit() & getRandom64Bit();
@@ -101,7 +100,7 @@ int main() {
           mp[mpKey] = rookMaskValue;
       }
       if (j > n) {
-        std::cout << i << "\n";
+        std::cout << i << " " << mp.size() << "\n";
         for (auto i : mp) cout << i.first << " " << i.second << "\n";
         break;
       }

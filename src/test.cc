@@ -5,32 +5,33 @@ using namespace std;
 
 #include "chess.h"
 
-// g++ -std=c++14 -o test test.cc chess.cc move.cc movegen.cc
-
 int main() {
-    ifstream file("fenTests.in", fstream::in);
+  ifstream file("./tests/fenTests.in", fstream::in);
 
-    string fen;
-    auto t1 = std::chrono::high_resolution_clock::now();
-    while (getline(file, fen, '\n')) {
-        int depth, expNodeCount;
-        file >> depth >> expNodeCount;
+  if (!file) cout << "Unable to open fenTests.in!\n";
 
-        file.ignore(numeric_limits<streamsize>::max(), '\n');
+  string fen;
+  auto t1 = std::chrono::high_resolution_clock::now();
+  getline(file, fen, '\n');
+  int depth, expNodeCount;
+  file >> depth >> expNodeCount;
 
-        Chess* chess = new Chess(fen);
+  file.ignore(numeric_limits<streamsize>::max(), '\n');
 
-        int nodeCount = chess->perft(depth);
+  cout << "FEN: " << fen << "\n";
+  Chess chess = Chess(fen);
 
-        if (nodeCount == expNodeCount) {
-            cout << "Passed Test.\n";
-        } else {
-            cout << "Failed Test! " << fen << "\n";
-        }
-    }
-    auto t2 = std::chrono::high_resolution_clock::now();
-    auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-    chrono::duration<double, std::milli> ms_double = (t2 - t1);
+  //   int nodeCount = chess.perft(depth);
 
-    std::cout << ms_double.count() / 1000 << "s | " << ms_int.count() << "ms\n";
+  // if (nodeCount == expNodeCount) {
+  //   cout << "Passed Test.\n";
+  // } else {
+  //   cout << "Failed Test! " << fen << "\n";
+  // }
+
+  auto t2 = std::chrono::high_resolution_clock::now();
+  auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+  chrono::duration<double, std::milli> ms_double = (t2 - t1);
+
+  std::cout << ms_double.count() / 1000 << "s | " << ms_int.count() << "ms\n";
 }
