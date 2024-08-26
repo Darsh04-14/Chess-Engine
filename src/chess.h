@@ -14,19 +14,20 @@ typedef unsigned long long ULL;
 static const short ColourType = (3 << 3);
 static const short PieceType = (1 << 3) - 1;
 
+static const bool WHITE_IND = White >> 4;
+static const bool BLACK_IND = Black >> 4;
+
 // Macros for bitboards
 #define setBit(bitboard, ind) ((bitboard) |= (1ULL << (ind)))
 #define getBit(bitboard, ind) ((bitboard) & (1ULL << (ind)))
 #define popBit(bitboard, ind) ((bitboard) ^= (1ULL << (ind)))
 #define pieceAt(board, ind) (Piece(board[ind] & PieceType))
 #define colourAt(board, ind) (Colour(board[ind] & ColourType))
+#define colourInd(c) (c == White ? WHITE_IND : BLACK_IND)
 
 class Chess : public Game {
   static const short NUM_ROWS = 8;
   static const short NUM_COLS = 8;
-
-  static const bool WHITE_IND = White >> 4;
-  static const bool BLACK_IND = Black >> 4;
 
   const ULL rookShifts[64] = {
       12, 11, 11, 11, 11, 11, 11, 12, 11, 10, 10, 10, 10, 10, 10, 11, 11, 10, 10, 10, 10, 10,
@@ -69,6 +70,7 @@ class Chess : public Game {
   ULL pieceBitboards[2][7];
   ULL attackBitboards[2];
   ULL pinnedPieces[64];
+  ULL checks[2];
 
   void genCastleMove();
   void genKingMoves();
@@ -108,8 +110,10 @@ class Chess : public Game {
   ULL getRookAttack(short, ULL);
   ULL getBishopAttack(short, ULL);
   void getAttacks(short, ULL);
-  ULL getPieceAttack(Colour, Piece, short);
+  ULL getPieceMoves(Colour, Piece, short);
   void setCastlingRights(Move);
+  void setPinsAndChecks(Colour, ULL, short);
+  vector<ULL> getRayAttacks(Piece, short);
   void printBitboard(ULL);  // Debugging
 
   // Internal game functions

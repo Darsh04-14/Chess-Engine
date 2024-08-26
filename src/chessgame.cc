@@ -8,7 +8,7 @@ void Chess::makeMove(Move move) {
 
   movePiece(move.start(), move.target());
 
-  bool colourInd = colourToMove == White ? WHITE_IND : BLACK_IND;
+  bool colourInd = colourInd(colourToMove);
 
   if (move.isCastle()) {
     short rankSquare = colourInd ? 56 : 0;

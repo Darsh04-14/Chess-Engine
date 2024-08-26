@@ -1,65 +1,61 @@
 #include "chess.h"
 
 void Chess::addMove(Move m) {
-  if (pinnedPieces[m.start()] && !(pinnedPieces[m.start()] & (1ULL << m.target()))) return;
+  printBitboard(checks[0]);
+  if (pinnedPieces[m.start()] && !getBit(pinnedPieces[m.start()], m.target())) return;
+
+  if (checks[0] && !checks[1] && pieceAt(board, m.start()) != King && !getBit(checks[0], m.target())) return;
 
   legalMoves[legalMovesLen++] = m;
 }
 
 void Chess::genAttacks(Colour c) {
-  int colourInd = c == White ? WHITE_IND : BLACK_IND;
+  int colourInd = colourInd(c);
 
   attackBitboards[colourInd] = 0;
   memset(pinnedPieces, 0, sizeof(pinnedPieces));
+  checks[0] = checks[1] = 0;
+
+  ULL enemyKingBitboard = pieceBitboards[!colourInd][King];
 
   for (int i = 1; i <= 3; ++i) {
     ULL bitboard = pieceBitboards[colourInd][i];
     while (bitboard) {
       short square = lsbIndex(bitboard);
-      attackBitboards[colourInd] |= getPieceAttack(c, Piece(i), square);
+      ULL pieceMove = getPieceMoves(c, Piece(i), square);
+      attackBitboards[colourInd] |= pieceMove;
+      setPinsAndChecks(c, pieceMove & enemyKingBitboard, square);
       popBit(bitboard, square);
     }
   }
 
   // Sliding pieces
-  ULL enemyPieces = colourBitboard(Colour(c ^ ColourType)), friendPieces = colourBitboard(c);
+  ULL enemyPieces = colourBitboard(Colour(c ^ colourToMove)), friendPieces = colourBitboard(c);
   for (int i = 4; i <= 6; ++i) {
     ULL bitboard = pieceBitboards[colourInd][i];
     while (bitboard) {
       short square = lsbIndex(bitboard);
-      ULL mask = getPieceAttack(c, Piece(i), square);
-      bool attacksKing = mask & (pieceBitboards[!colourInd][King]);
+      vector<ULL> rays = getRayAttacks(Piece(i), square);
 
-      if (attacksKing) {
-        short kingSquare = lsbIndex(pieceBitboards[!colourInd][King]);
-        short row = square / 8, col = square % 8;
-        ULL rayAttack = 0;
-        ULL half = square < kingSquare ? ~((1ULL << square) - 1) : ((1ULL << square) - 1);
-        if (col == kingSquare % 8 && (i == Rook || i == Queen))
-          rayAttack = (72340172838076673ULL << col) & half;
-        else if (row == kingSquare / 8 && (i == Rook || i == Queen))
-          rayAttack = (255ULL << (row * 8)) & half;
-        else if ((1ULL << kingSquare) & diagonals[row + col])
-          rayAttack = diagonals[row + col] & half;
+      ULL mask1 = 0, mask2 = 0;
+      for (int i = 0; i < rays.size(); ++i) {
+        setPinsAndChecks(c, rays[i], square);
+        if (i < 4)
+          mask1 |= rays[i];
         else
-          rayAttack = rdiagonals[7 - row + col] & half;
-
-        rayAttack ^= (1ULL << kingSquare);
-
-        ULL rayPieces = rayAttack & enemyPieces;
-        if (!(rayAttack & friendPieces) && rayPieces && !(rayPieces & (rayPieces - 1)))
-          pinnedPieces[lsbIndex(rayPieces)] = rayPieces;
+          mask2 |= rays[i];
       }
 
-      mask ^= mask & (enemyPieces | friendPieces);
-      if (i == Bishop) attackBitboards[colourInd] |= getBishopAttack(square, mask);
-      if (i == Rook) attackBitboards[colourInd] |= getRookAttack(square, mask);
-      if (i == Queen) {
-        ULL rookMask = getPieceAttack(c, Rook, square), bishopMask = getPieceAttack(c, Bishop, square);
-        rookMask ^= (friendPieces | enemyPieces) & rookMask;
-        bishopMask ^= (friendPieces | enemyPieces) & bishopMask;
-        attackBitboards[colourInd] |= getBishopAttack(square, bishopMask);
-        attackBitboards[colourInd] |= getRookAttack(square, rookMask);
+      mask1 ^= mask1 & (friendPieces | enemyPieces);
+      mask2 ^= mask2 & (friendPieces | enemyPieces);
+
+      if (Piece(i) == Rook)
+        attackBitboards[colourInd] |= getRookAttack(square, mask1);
+      else if (Piece(i) == Bishop)
+        attackBitboards[colourInd] |= getBishopAttack(square, mask1);
+      else {
+        attackBitboards[colourInd] |= getRookAttack(square, mask1);
+        attackBitboards[colourInd] |= getBishopAttack(square, mask1);
       }
 
       popBit(bitboard, square);
@@ -68,20 +64,27 @@ void Chess::genAttacks(Colour c) {
 }
 
 void Chess::genLegalMoves() {
-  // genAttacks(Colour(ColourType ^ colourToMove));
+  genAttacks(Colour(colourToMove ^ ColourType));
+  cout << "Checks[0]\n";
+  printBitboard(checks[0]);
+  cout << "Checks[1]\n";
+  printBitboard(checks[1]);
 
   legalMovesLen = 0;
+
+  if (!checks[0] || !checks[1]) {
+    genPawnMoves();
+    genKnightMoves();
+    genBishopMoves();
+    // genRookMoves();
+    // genQueenMoves();
+    genCastleMove();
+  }
   // genKingMoves();
-  // genPawnMoves();
-  // genKnightMoves();
-  // genBishopMoves();
-  // genRookMoves();
-  // genQueenMoves();
-  // genCastleMove();
 }
 
 void Chess::genCastleMove() {
-  int colourInd = colourToMove == White ? WHITE_IND : BLACK_IND;
+  int colourInd = colourInd(colourToMove);
   short leftCastle = castlingRights[colourInd][0];
   short rightCastle = castlingRights[colourInd][1];
 
@@ -114,7 +117,7 @@ void Chess::genCastleMove() {
 }
 
 void Chess::genKingMoves() {
-  int colourInd = colourToMove == White ? WHITE_IND : BLACK_IND;
+  int colourInd = colourInd(colourToMove);
 
   ULL friendBitboard = colourBitboard(colourToMove);
   ULL bitboard = pieceBitboards[colourInd][King];
@@ -133,7 +136,7 @@ void Chess::genKingMoves() {
 }
 
 void Chess::genPawnMoves() {
-  int colourInd = colourToMove == White ? WHITE_IND : BLACK_IND;
+  int colourInd = colourInd(colourToMove);
   int offsets[2][4] = {{8, 16, 7, 9}, {-8, -16, -9, -7}};
 
   int startingRank = colourInd ? 6 : 1;
@@ -184,7 +187,7 @@ void Chess::genPawnMoves() {
 }
 
 void Chess::genKnightMoves() {
-  int colourInd = colourToMove == White ? WHITE_IND : BLACK_IND;
+  int colourInd = colourInd(colourToMove);
 
   ULL friendBitboard = colourBitboard(colourToMove);
   ULL bitboard = pieceBitboards[colourInd][Knight];
@@ -202,7 +205,7 @@ void Chess::genKnightMoves() {
 }
 
 void Chess::genRookMoves() {
-  int colourInd = colourToMove == White ? WHITE_IND : BLACK_IND;
+  int colourInd = colourInd(colourToMove);
 
   ULL friendBitboard = colourBitboard(colourToMove), enemyBitboard = colourBitboard(Colour(colourToMove ^ ColourType));
   ULL bitboard = pieceBitboards[colourInd][Rook];
@@ -210,7 +213,7 @@ void Chess::genRookMoves() {
   while (bitboard) {
     short startSquare = lsbIndex(bitboard);
 
-    ULL mask = getPieceAttack(colourToMove, Rook, startSquare);
+    ULL mask = getPieceMoves(colourToMove, Rook, startSquare);
     mask ^= (friendBitboard | enemyBitboard) & mask;
 
     ULL attacks = getRookAttack(startSquare, mask);
@@ -224,7 +227,7 @@ void Chess::genRookMoves() {
 }
 
 void Chess::genBishopMoves() {
-  int colourInd = colourToMove == White ? WHITE_IND : BLACK_IND;
+  int colourInd = colourInd(colourToMove);
 
   ULL friendBitboard = colourBitboard(colourToMove), enemyBitboard = colourBitboard(Colour(colourToMove ^ ColourType));
   ULL bitboard = pieceBitboards[colourInd][Bishop];
@@ -232,7 +235,7 @@ void Chess::genBishopMoves() {
   while (bitboard) {
     int startSquare = lsbIndex(bitboard);
 
-    ULL mask = getPieceAttack(colourToMove, Bishop, startSquare);
+    ULL mask = getPieceMoves(colourToMove, Bishop, startSquare);
     mask ^= ((friendBitboard | enemyBitboard) & mask);
 
     ULL attacks = getBishopAttack(startSquare, mask);
@@ -245,7 +248,7 @@ void Chess::genBishopMoves() {
 }
 
 void Chess::genQueenMoves() {
-  int colourInd = colourToMove == White ? WHITE_IND : BLACK_IND;
+  int colourInd = colourInd(colourToMove);
 
   ULL friendBitboard = colourBitboard(colourToMove), enemyBitboard = colourBitboard(Colour(colourToMove ^ ColourType));
   ULL bitboard = pieceBitboards[colourInd][Queen];
@@ -253,10 +256,10 @@ void Chess::genQueenMoves() {
   while (bitboard) {
     int startSquare = lsbIndex(bitboard);
 
-    ULL rookMask = getPieceAttack(colourToMove, Rook, startSquare);
+    ULL rookMask = getPieceMoves(colourToMove, Rook, startSquare);
     rookMask ^= (friendBitboard | enemyBitboard) & rookMask;
 
-    ULL bishopMask = getPieceAttack(colourToMove, Bishop, startSquare);
+    ULL bishopMask = getPieceMoves(colourToMove, Bishop, startSquare);
     bishopMask ^= (friendBitboard | enemyBitboard) & bishopMask;
 
     ULL attacks = getRookAttack(startSquare, rookMask) | getBishopAttack(startSquare, bishopMask);

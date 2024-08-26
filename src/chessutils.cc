@@ -34,14 +34,14 @@ Piece Chess::getPiece(char a) {
 void Chess::setPiece(Colour c, Piece p, int i) {
   popPiece(i);
   board[i] = c | p;
-  int colourInd = c == White ? WHITE_IND : BLACK_IND;
+  int colourInd = colourInd(c);
   pieceBitboards[colourInd][p] |= (1ULL << i);
 }
 
 void Chess::popPiece(int i) {
   Piece p = pieceAt(board, i);
   Colour c = colourAt(board, i);
-  int colourInd = c == White ? WHITE_IND : BLACK_IND;
+  int colourInd = colourInd(c);
   board[i] = NoPiece;
   if (p != NoPiece) pieceBitboards[colourInd][p] ^= (1ULL << i);
 }
@@ -55,7 +55,7 @@ void Chess::movePiece(int start, int target) {
 }
 
 ULL Chess::colourBitboard(Colour c) {
-  int colourInd = c == White ? WHITE_IND : BLACK_IND;
+  int colourInd = colourInd(c);
   ULL bitboard = 0;
   for (int i = 1; i < 7; ++i) bitboard |= pieceBitboards[colourInd][i];
   return bitboard;
@@ -88,8 +88,8 @@ void Chess::getAttacks(short startSquare, ULL attacks) {
   }
 }
 
-ULL Chess::getPieceAttack(Colour c, Piece p, short square) {
-  int colourInd = c == White ? WHITE_IND : BLACK_IND;
+ULL Chess::getPieceMoves(Colour c, Piece p, short square) {
+  int colourInd = colourInd(c);
   if (p == King)
     return kingAttacks[square];
   else if (p == Pawn)
@@ -109,7 +109,7 @@ ULL Chess::getPieceAttack(Colour c, Piece p, short square) {
 void Chess::setCastlingRights(Move move) {
   Piece p = pieceAt(board, move.start());
   Colour c = colourAt(board, move.start());
-  int colourInd = c == White ? WHITE_IND : BLACK_IND;
+  int colourInd = colourInd(c);
 
   bool leftSide = !(move.start() % 8);
 
@@ -133,6 +133,37 @@ void Chess::setCastlingRights(Move move) {
   }
 }
 
+// Attack should be an attack not a full movement mask
+void Chess::setPinsAndChecks(Colour c, ULL attack, short square) {
+  int colourInd = colourInd(c);
+  ULL enemyKing = pieceBitboards[!colourInd][King], friendPieces = colourBitboard(c);
+  if (!(enemyKing & attack) || (friendPieces & attack)) return;
+
+  attack ^= enemyKing;
+  short enemyKingSquare = lsbIndex(enemyKing);
+
+  if (square < enemyKingSquare)
+    attack &= enemyKing - 1;
+  else
+    attack &= ~(enemyKing - 1);
+
+  ULL enemyPieces = colourBitboard(Colour(c ^ ColourType));
+
+  if (!(attack & enemyPieces)) {
+    if (!checks[0]) checks[0] = attack;
+    if (!checks[1]) checks[1] = attack;
+    return;
+  }
+
+  ULL blocker = attack & enemyPieces;
+
+  // More than one blocker
+  if (blocker & (blocker - 1)) return;
+
+  short blockerSq = lsbIndex(blocker);
+  pinnedPieces[blockerSq] = attack;
+}
+
 int Chess::perft(int depth, int debug) {
   if (!depth) {
     return 1;
@@ -142,9 +173,9 @@ int Chess::perft(int depth, int debug) {
 
   Move* currentlegalMoves = new Move[312];
 
-  short currentMoveLen = legalMovesLen;
+  // short currentMoveLen = legalMovesLen;
 
-  cout << legalMovesLen << "\n";
+  // cout << legalMovesLen << "\n";
 
   // for (int i = 0; i < legalMovesLen; ++i) {
   //   currentlegalMoves[i] = legalMoves[i];
@@ -165,6 +196,24 @@ int Chess::perft(int depth, int debug) {
   currentlegalMoves = nullptr;
 
   return count;
+}
+
+vector<ULL> Chess::getRayAttacks(Piece p, short square) {
+  if (p != Rook && p != Bishop && p != Queen) return {};
+  ULL moves[4] = {
+      ((255UL << (square / 8 * 8)) ^ (1ULL << square)),
+      ((72340172838076673ULL << square % 8) ^ (1ULL << square)),
+      (diagonals[square / 8 + square % 8] ^ (1ULL << square)),
+      (rdiagonals[7 - square / 8 + square % 8] ^ (1ULL << square)),
+  };
+  short begin = (p == Rook || p == Queen) ? 0 : 2, end = (p == Bishop || p == Queen) ? 4 : 2;
+  ULL half = (1ULL << square) - 1;
+  vector<ULL> rayAttack;
+  for (int i = begin; i < end; ++i) {
+    rayAttack.push_back(moves[i] & half);
+    rayAttack.push_back(moves[i] & ~half);
+  }
+  return rayAttack;
 }
 
 void Chess::printBitboard(ULL bitboard) {
