@@ -108,8 +108,11 @@ class Chess : public Game {
   ULL getBishopAttack(short, ULL);
   void getAttacks(short, ULL);
   ULL getPieceAttack(Colour, Piece, short);
+  void setCastlingRights(Move);
 
   // Internal game functions
+  void makeMove(Move);
+  void undoMove();
 
  public:
   Chess();
@@ -117,6 +120,7 @@ class Chess : public Game {
 
   bool playMove(short, short) override;
   bool playMove(string, string) override;
+  bool playMove(short);
 };
 
 #endif

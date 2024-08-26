@@ -32,6 +32,7 @@ Piece Chess::getPiece(char a) {
 }
 
 void Chess::setPiece(Colour c, Piece p, int i) {
+  popPiece(i);
   board[i] = c | p;
   int colourInd = c == White ? WHITE_IND : BLACK_IND;
   pieceBitboards[colourInd][p] |= (1 << i);
@@ -41,8 +42,8 @@ void Chess::popPiece(int i) {
   Piece p = pieceAt(board, i);
   Colour c = colourAt(board, i);
   int colourInd = c == White ? WHITE_IND : BLACK_IND;
-  board[i] = 0;
-  pieceBitboards[colourInd][p] ^= (1 << i);
+  board[i] = NoPiece;
+  if (p != NoPiece) pieceBitboards[colourInd][p] ^= (1 << i);
 }
 
 void Chess::movePiece(int start, int target) {
@@ -102,4 +103,31 @@ ULL Chess::getPieceAttack(Colour c, Piece p, short square) {
   else
     return (255UL << (square / 8 * 8)) | (72340172838076673ULL << square % 8) | diagonals[square / 8 + square % 8] |
            rdiagonals[7 - square / 8 + square % 8] ^ (1ULL << square);
+}
+
+void Chess::setCastlingRights(Move move) {
+  Piece p = pieceAt(board, move.start());
+  Colour c = colourAt(board, move.start());
+  int colourInd = c == White ? WHITE_IND : BLACK_IND;
+
+  bool leftSide = !(move.start() % 8);
+
+  // Castling Rights - colourToMove
+  if (move.isCastle() || p == King) {
+    if (castlingRights[colourInd][0] == -1) castlingRights[colourInd][0] = previousMoves.size();
+    if (castlingRights[colourInd][1] == -1) castlingRights[colourInd][1] = previousMoves.size();
+  } else if (p == Rook && leftSide) {
+    if (castlingRights[colourInd][0] == -1) castlingRights[colourInd][0] = previousMoves.size();
+  } else if (p == Rook && !leftSide) {
+    if (castlingRights[colourInd][1] == -1) castlingRights[colourInd][1] = previousMoves.size();
+  }
+
+  // Castling Rights - enemyColour
+  Piece capturePiece = move.capture();
+  leftSide = !(move.target() % 8);
+  if (capturePiece == Rook && leftSide) {
+    if (castlingRights[!colourInd][0] == -1) castlingRights[!colourInd][0] = previousMoves.size();
+  } else if (capturePiece == Rook && !leftSide) {
+    if (castlingRights[!colourInd][1] == -1) castlingRights[!colourInd][1] = previousMoves.size();
+  }
 }

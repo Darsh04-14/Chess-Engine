@@ -24,10 +24,10 @@ class Move {
   MoveFlag flag() const;
   short start() const;
   short target() const;
-  short isCapture() const;
+  Piece capture() const;
   bool isEnPassant() const;
   bool isCastle() const;
-  short isPromotion() const;
+  Piece promotion() const;
   bool isCapturePromotion() const;
   bool operator==(const Move&) const;
 };

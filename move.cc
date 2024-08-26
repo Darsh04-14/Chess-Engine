@@ -21,13 +21,13 @@ MoveFlag Move::flag() const { return MoveFlag(moveData & (7 << 12)); }
 short Move::start() const { return moveData & positionMask; }
 short Move::target() const { return (moveData >> 6) & positionMask; }
 
-short Move::isCapture() const { return (moveData >> 15) & 7; }
+Piece Move::capture() const { return (moveData >> 15) & 7; }
 
 bool Move::isEnPassant() const { return flag() == ENPASSANT; }
 
 bool Move::isCastle() const { return flag() == LEFT_CASTLE || flag() == RIGHT_CASTLE; }
 
-short Move::isPromotion() const { return (moveData >> 18) & 7; }
+Piece Move::promotion() const { return (moveData >> 18) & 7; }
 
 bool Move::isCapturePromotion() const { return flag() == CAPTURE_PROMOTION; }
 
