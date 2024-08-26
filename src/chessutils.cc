@@ -150,8 +150,10 @@ void Chess::setPinsAndChecks(Colour c, ULL attack, short square) {
   ULL enemyPieces = colourBitboard(Colour(c ^ ColourType));
 
   if (!(attack & enemyPieces)) {
-    if (!checks[0]) checks[0] = attack;
-    if (!checks[1]) checks[1] = attack;
+    if (!checks[0])
+      checks[0] = attack;
+    else
+      checks[1] = attack;
     return;
   }
 

@@ -11,7 +11,8 @@ int main() {
   if (!file) cout << "Unable to open fenTests.in!\n";
 
   string fen;
-  auto t1 = std::chrono::high_resolution_clock::now();
+  double ms_time = 0;
+
   getline(file, fen, '\n');
   int depth, expNodeCount;
   file >> depth >> expNodeCount;
@@ -21,6 +22,7 @@ int main() {
   cout << "FEN: " << fen << "\n";
   Chess chess = Chess(fen);
 
+  auto t1 = std::chrono::high_resolution_clock::now();
   //   int nodeCount = chess.perft(depth);
 
   // if (nodeCount == expNodeCount) {
@@ -30,8 +32,8 @@ int main() {
   // }
 
   auto t2 = std::chrono::high_resolution_clock::now();
-  auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
   chrono::duration<double, std::milli> ms_double = (t2 - t1);
+  ms_time += ms_double.count();
 
-  std::cout << ms_double.count() / 1000 << "s | " << ms_int.count() << "ms\n";
+  std::cout << ms_time / 1000 << "s | " << ms_time << "ms\n";
 }

@@ -1,7 +1,6 @@
 #include "chess.h"
 
 void Chess::addMove(Move m) {
-  printBitboard(checks[0]);
   if (pinnedPieces[m.start()] && !getBit(pinnedPieces[m.start()], m.target())) return;
 
   if (checks[0] && !checks[1] && pieceAt(board, m.start()) != King && !getBit(checks[0], m.target())) return;
@@ -76,11 +75,11 @@ void Chess::genLegalMoves() {
     genPawnMoves();
     genKnightMoves();
     genBishopMoves();
-    // genRookMoves();
-    // genQueenMoves();
+    genRookMoves();
+    genQueenMoves();
     genCastleMove();
   }
-  // genKingMoves();
+  genKingMoves();
 }
 
 void Chess::genCastleMove() {
