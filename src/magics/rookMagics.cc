@@ -30,7 +30,7 @@ ULL getRookMaskValue(int square, ULL mask) {
     u += 8;
     movementMask |= (1ULL << u);
   }
-  while (d >= 0 && (mask & (1LL << d))) {
+  while (d - 8 >= 0 && (mask & (1LL << d))) {
     d -= 8;
     movementMask |= (1ULL << d);
   }
