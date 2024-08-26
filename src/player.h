@@ -6,12 +6,13 @@ using namespace std;
 class Chess;
 
 class Player {
-   protected:
-    Chess* chess;
+ protected:
+  Chess* chess;
 
-   public:
-    Player(Chess* g) : chess{g} {};
-    virtual bool notify() = 0;
+ public:
+  Player(Chess* g) : chess{g} {};
+  virtual bool notify() = 0;
+  virtual ~Player() = 0;
 };
 
 #endif

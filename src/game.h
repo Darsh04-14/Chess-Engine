@@ -26,10 +26,7 @@ class Game {
   virtual bool playMove(short) = 0;
   virtual vector<Move> getLegalMoves() = 0;
   virtual vector<short> getBoard() = 0;
-  ~Game() {
-    delete players[0];
-    delete players[1];
-  }
+  virtual ~Game() = 0;
 };
 
 #endif

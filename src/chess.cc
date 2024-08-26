@@ -1,7 +1,5 @@
 #include "chess.h"
 
-#include <fstream>
-
 void Chess::pawnAttackTable() {
   memset(pawnAttacks, 0, sizeof(pawnAttacks));
   ULL notAFile = 0, notHFile = 0;

@@ -2,6 +2,7 @@
 #define CHESS_H
 
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <vector>
 

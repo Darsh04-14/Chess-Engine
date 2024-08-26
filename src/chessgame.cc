@@ -6,9 +6,6 @@ void Chess::makeMove(Move move) {
   setCastlingRights(move);
   Colour enemyColour = Colour(colourToMove ^ ColourType);
 
-  Piece startPiece = pieceAt(board, move.start());
-  Piece targetPiece = Piece(move.capture());
-
   movePiece(move.start(), move.target());
 
   bool colourInd = colourToMove == White ? WHITE_IND : BLACK_IND;

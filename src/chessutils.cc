@@ -97,12 +97,13 @@ ULL Chess::getPieceAttack(Colour c, Piece p, short square) {
   else if (p == Knight)
     return knightAttacks[square];
   else if (p == Rook)
-    return (255UL << (square / 8 * 8)) | (72340172838076673ULL << square % 8) ^ (1ULL << square);
+    return (((255UL << (square / 8 * 8)) | (72340172838076673ULL << square % 8)) ^ (1ULL << square));
   else if (p == Bishop)
-    return diagonals[square / 8 + square % 8] | rdiagonals[7 - square / 8 + square % 8] ^ (1ULL << square);
+    return (diagonals[square / 8 + square % 8] | rdiagonals[7 - square / 8 + square % 8]) ^ (1ULL << square);
   else
-    return (255UL << (square / 8 * 8)) | (72340172838076673ULL << square % 8) | diagonals[square / 8 + square % 8] |
-           rdiagonals[7 - square / 8 + square % 8] ^ (1ULL << square);
+    return (((255UL << (square / 8 * 8)) | (72340172838076673ULL << square % 8) | diagonals[square / 8 + square % 8] |
+             rdiagonals[7 - square / 8 + square % 8]) ^
+            (1ULL << square));
 }
 
 void Chess::setCastlingRights(Move move) {

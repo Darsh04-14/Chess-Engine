@@ -1,5 +1,4 @@
 #include "chess.h"
-using namespace std;
 
 void Chess::addMove(Move m) {
   if (pinnedPieces[m.start()] && !(pinnedPieces[m.start()] & (1ULL << m.target()))) return;
@@ -117,7 +116,7 @@ void Chess::genCastleMove() {
 void Chess::genKingMoves() {
   int colourInd = colourToMove == White ? WHITE_IND : BLACK_IND;
 
-  ULL friendBitboard = colourBitboard(colourToMove), enemyBitboard = colourBitboard(Colour(colourToMove ^ ColourType));
+  ULL friendBitboard = colourBitboard(colourToMove);
   ULL bitboard = pieceBitboards[colourInd][King];
 
   while (bitboard) {
@@ -175,9 +174,9 @@ void Chess::genPawnMoves() {
     if (previousMoves.size() && previousMoves.back().flag() == DOUBLE_PAWN_PUSH &&
         previousMoves.back().target() / 8 == square / 8) {
       if (previousMoves.back().target() == square - 1)
-        addMove({square, square + offsets[colourInd][3], ENPASSANT, Pawn});
+        addMove({square, square + offsets[colourInd][2], ENPASSANT, Pawn});
       if (previousMoves.back().target() == square + 1)
-        addMove({square, square + offsets[colourInd][4], ENPASSANT, Pawn});
+        addMove({square, square + offsets[colourInd][3], ENPASSANT, Pawn});
     }
 
     popBit(bitboard, square);
@@ -210,7 +209,6 @@ void Chess::genRookMoves() {
 
   while (bitboard) {
     short startSquare = lsbIndex(bitboard);
-    int row = startSquare / 8, col = startSquare % 8;
 
     ULL mask = getPieceAttack(colourToMove, Rook, startSquare);
     mask ^= (friendBitboard | enemyBitboard) & mask;

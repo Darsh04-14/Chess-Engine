@@ -10,9 +10,6 @@ using namespace std;
 
 int main() {
   // cout << "Enter FEN for game or 'd' for default setup: ";
-  string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
-  Chess *chess = new Chess(defaultFEN);
 
   return 0;
 }

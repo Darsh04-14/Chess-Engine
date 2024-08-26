@@ -2,8 +2,8 @@ CXX = g++
 CXXFLAGS = -std=c++20 -Wall -MMD
 EXEC = chess
 TEST_EXEC = chesstest
-OBJECTS = chess.o main.o movegen.o move.o human.o engine1.o engine2.o engine3.o engine4.o
-TEST_OBJECTS = test.o chess.o movegen.o move.o
+OBJECTS = game.o chess.o main.o movegen.o move.o chessgame.o chessutils.o
+TEST_OBJECTS = test.o chessgame.o chessutils.o chess.o movegen.o move.o
 DEPENDS = ${OBJECTS:.o=.d} ${TEST_OBJECTS:.o=.d}
 
 .PHONY: all clean test
