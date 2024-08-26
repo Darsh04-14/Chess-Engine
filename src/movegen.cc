@@ -69,15 +69,22 @@ void Chess::genLegalMoves() {
   cout << "Checks[1]\n";
   printBitboard(checks[1]);
 
+  for (int i = 0; i < 64; i++) {
+    if (pinnedPieces[i]) {
+      cout << "Pinned piece at " << i << "\n";
+      printBitboard(pinnedPieces[i]);
+    }
+  }
+
   legalMovesLen = 0;
 
   if (!checks[0] || !checks[1]) {
     genPawnMoves();
-    genKnightMoves();
-    genBishopMoves();
-    genRookMoves();
+    // genKnightMoves();
+    // genBishopMoves();
+    // genRookMoves();
     genQueenMoves();
-    genCastleMove();
+    // genCastleMove();
   }
   genKingMoves();
 }
@@ -141,13 +148,13 @@ void Chess::genPawnMoves() {
   int startingRank = colourInd ? 6 : 1;
   int promotionRank = colourInd ? 0 : 7;
   ULL bitboard = pieceBitboards[colourInd][Pawn];
-  ULL whiteBitboard = colourBitboard(White), blackBitboard = colourBitboard(Black);
+  ULL friendBitboard = colourBitboard(colourToMove), enemyBitboard = colourBitboard(Colour(colourToMove ^ ColourType));
 
   while (bitboard) {
     int square = lsbIndex(bitboard);
     // Single Push
     int pushSquare = square + offsets[colourInd][0];
-    if (!((whiteBitboard | blackBitboard) & (1ULL << pushSquare))) {
+    if (!((friendBitboard | enemyBitboard) & (1ULL << pushSquare))) {
       if (pushSquare / 8 == promotionRank)
         for (int i = 3; i <= 6; ++i) addMove({square, pushSquare, PROMOTION, Piece(i)});
       else
@@ -155,19 +162,20 @@ void Chess::genPawnMoves() {
 
       // Double push
       int doublePushSquare = square + offsets[colourInd][1];
-      if (!((whiteBitboard | blackBitboard) & (1ULL << doublePushSquare)) && square / 8 == startingRank)
+      if (!((friendBitboard | enemyBitboard) & (1ULL << doublePushSquare)) && square / 8 == startingRank)
         addMove({square, doublePushSquare, CAPTURE, NoPiece});
     }
 
     // Captures
-    ULL attackBitboard = pawnAttacks[colourInd][square] & (colourInd ? whiteBitboard : blackBitboard);
+    ULL attackBitboard = pawnAttacks[colourInd][square] & enemyBitboard;
+
     while (attackBitboard) {
       int attackSquare = lsbIndex(attackBitboard);
 
       if (attackSquare / 8 == promotionRank)
-        for (int i = 3; i <= 6; ++i) addMove({square, pushSquare, pieceAt(board, attackSquare), Piece(i)});
+        for (int i = 3; i <= 6; ++i) addMove({square, attackSquare, pieceAt(board, attackSquare), Piece(i)});
       else
-        addMove({square, pushSquare, CAPTURE, pieceAt(board, attackSquare)});
+        addMove({square, attackSquare, CAPTURE, pieceAt(board, attackSquare)});
 
       popBit(attackBitboard, attackSquare);
     }
@@ -195,7 +203,7 @@ void Chess::genKnightMoves() {
     int startSquare = lsbIndex(bitboard);
 
     ULL attacks = knightAttacks[startSquare];
-    attacks ^= friendBitboard;
+    attacks ^= (friendBitboard & attacks);
 
     getAttacks(startSquare, attacks);
 
@@ -262,6 +270,7 @@ void Chess::genQueenMoves() {
     bishopMask ^= (friendBitboard | enemyBitboard) & bishopMask;
 
     ULL attacks = getRookAttack(startSquare, rookMask) | getBishopAttack(startSquare, bishopMask);
+
     attacks ^= (friendBitboard & attacks);
 
     getAttacks(startSquare, attacks);

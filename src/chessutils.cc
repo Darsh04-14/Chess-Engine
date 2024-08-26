@@ -141,6 +141,7 @@ void Chess::setPinsAndChecks(Colour c, ULL attack, short square) {
 
   attack ^= enemyKing;
   short enemyKingSquare = lsbIndex(enemyKing);
+  setBit(attack, square);
 
   if (square < enemyKingSquare)
     attack &= enemyKing - 1;
