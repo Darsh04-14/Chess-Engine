@@ -110,6 +110,7 @@ class Chess : public Game {
   void getAttacks(short, ULL);
   ULL getPieceAttack(Colour, Piece, short);
   void setCastlingRights(Move);
+  int perft(int, int);  // For testing purposes
 
   // Internal game functions
   void makeMove(Move);

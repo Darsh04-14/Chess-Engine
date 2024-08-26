@@ -61,7 +61,7 @@ ULL Chess::colourBitboard(Colour c) {
   return bitboard;
 }
 
-void Chess::clearEdgeBits(short sq, ULL &mask) {
+void Chess::clearEdgeBits(short sq, ULL& mask) {
   if (sq / 8) mask &= ~(255ULL);
   if (sq / 8 < 7) mask &= ~(255ULL << 56);
   if (sq % 8) mask &= ~(72340172838076673ULL);
@@ -131,4 +131,35 @@ void Chess::setCastlingRights(Move move) {
   } else if (capturePiece == Rook && !leftSide) {
     if (castlingRights[!colourInd][1] == -1) castlingRights[!colourInd][1] = previousMoves.size();
   }
+}
+
+int Chess::perft(int depth, int debug) {
+  if (!depth) {
+    return 1;
+  }
+
+  genLegalMoves();
+
+  Move* currentlegalMoves = new Move[312];
+
+  short currentMoveLen = legalMovesLen;
+
+  for (int i = 0; i < legalMovesLen; ++i) {
+    currentlegalMoves[i] = legalMoves[i];
+  }
+
+  int count = 0;
+  for (int i = 0; i < currentMoveLen; ++i) {
+    short s = currentlegalMoves[i].start(), t = currentlegalMoves[i].target();
+    makeMove(currentlegalMoves[i]);
+    int n = perft(depth - 1, debug);
+    count += n;
+    undoMove();
+    if (depth == debug) {
+      cout << char(s % 8 + 'a') << char(s / 8 + '1') << char(t % 8 + 'a') << char(t / 8 + '1') << ": " << n << "\n";
+    }
+  }
+  delete[] currentlegalMoves;
+
+  return count;
 }
