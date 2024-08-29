@@ -1,6 +1,6 @@
 #include "chess.h"
 
-void Chess::makeMove(Move move) {
+void Chess::makeMove(const Move& move) {
   previousMoves.push_back(move);
 
   setCastlingRights(move);
@@ -14,7 +14,7 @@ void Chess::makeMove(Move move) {
     short rankSquare = colourInd ? 56 : 0;
 
     if (move.flag() == LEFT_CASTLE)
-      movePiece(rankSquare, rankSquare + 4);
+      movePiece(rankSquare, rankSquare + 3);
     else
       movePiece(rankSquare + 7, rankSquare + 5);
 
@@ -44,7 +44,7 @@ void Chess::undoMove() {
     short rankSquare = colourInd ? 56 : 0;
 
     if (lastMove.flag() == LEFT_CASTLE)
-      movePiece(rankSquare + 4, rankSquare);
+      movePiece(rankSquare + 3, rankSquare);
     else
       movePiece(rankSquare + 5, rankSquare + 7);
   } else if (lastMove.isEnPassant()) {

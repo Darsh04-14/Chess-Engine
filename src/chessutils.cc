@@ -128,24 +128,31 @@ void Chess::setCastlingRights(Move move) {
   Colour c = colourAt(board, move.start());
   int colourInd = colourInd(c);
 
-  bool leftSide = !(move.start() % 8);
+  short rookCol = move.start() % 8;
+  short rookRow = move.start() / 8;
+
+  short startRank = colourToMove == White ? 0 : 7;
 
   // Castling Rights - colourToMove
   if (move.isCastle() || p == King) {
     if (castlingRights[colourInd][0] == -1) castlingRights[colourInd][0] = previousMoves.size();
     if (castlingRights[colourInd][1] == -1) castlingRights[colourInd][1] = previousMoves.size();
-  } else if (p == Rook && leftSide) {
+  } else if (p == Rook && rookRow == startRank && rookCol == 0) {
     if (castlingRights[colourInd][0] == -1) castlingRights[colourInd][0] = previousMoves.size();
-  } else if (p == Rook && !leftSide) {
+  } else if (p == Rook && rookRow == startRank && rookCol == 7) {
     if (castlingRights[colourInd][1] == -1) castlingRights[colourInd][1] = previousMoves.size();
   }
 
   // Castling Rights - enemyColour
   Piece capturePiece = move.capture();
-  leftSide = !(move.target() % 8);
-  if (capturePiece == Rook && leftSide) {
+  short captureRow = move.target() / 8;
+  short captureCol = move.target() % 8;
+
+  startRank = 7 - startRank;
+
+  if (capturePiece == Rook && captureRow == startRank && captureCol == 0) {
     if (castlingRights[!colourInd][0] == -1) castlingRights[!colourInd][0] = previousMoves.size();
-  } else if (capturePiece == Rook && !leftSide) {
+  } else if (capturePiece == Rook && captureRow == startRank && captureCol == 7) {
     if (castlingRights[!colourInd][1] == -1) castlingRights[!colourInd][1] = previousMoves.size();
   }
 }
@@ -154,18 +161,45 @@ void Chess::setCastlingRights(Move move) {
 void Chess::setPinsAndChecks(Colour c, ULL attack, short square) {
   int colourInd = colourInd(c);
   ULL enemyKing = pieceBitboards[!colourInd][King], friendPieces = colourBitboard(c);
-  if (!(enemyKing & attack) || (friendPieces & attack)) return;
+  ULL enemyPieces = colourBitboard(Colour(c ^ ColourType));
+  short enemyKingSquare = lsbIndex(enemyKing);
+
+  if (!(enemyKing & attack)) return;
 
   attack ^= enemyKing;
-  short enemyKingSquare = lsbIndex(enemyKing);
-  setBit(attack, square);
 
   if (square < enemyKingSquare)
     attack &= enemyKing - 1;
   else
     attack &= ~(enemyKing - 1);
 
-  ULL enemyPieces = colourBitboard(Colour(c ^ ColourType));
+  if (friendPieces & attack) {
+    if (previousMoves.size()) {
+      Move lastMove = previousMoves.back();
+      ULL friendAttack = attack & friendPieces;
+      bool singleFriendBlocker = !(friendAttack & (friendAttack - 1));
+      if (lastMove.flag() == DOUBLE_PAWN_PUSH && getBit(attack, lastMove.target()) && singleFriendBlocker) {
+        short captureSquare = lastMove.target() + (c == White ? 8 : -8);
+        ULL enemyAttack = attack & enemyPieces;
+        if (enemyAttack) {
+          bool singleEnemyBlocker = !(enemyAttack & (enemyAttack - 1));
+          if (singleEnemyBlocker) {
+            short blockerInd = lsbIndex(enemyAttack);
+            bool validPawnPosition = pieceAt(board, blockerInd) == Pawn;
+            if ((lastMove.target() % 8 > 0 && blockerInd != lastMove.target() - 1) &&
+                (lastMove.target() % 8 < 7 && blockerInd != lastMove.target() + 1))
+              validPawnPosition = false;
+            if (validPawnPosition) enPassantPin = true;
+          }
+        } else if (!getBit(attack, captureSquare)) {
+          enPassantPin = true;
+        }
+      }
+    }
+    return;
+  }
+
+  setBit(attack, square);
 
   if (!(attack & enemyPieces)) {
     if (!checks[0])
@@ -201,14 +235,15 @@ int Chess::perft(int depth, int debug) {
 
   int count = 0;
   for (int i = 0; i < currentMoveLen; ++i) {
-    short s = currentlegalMoves[i].start(), t = currentlegalMoves[i].target();
-    makeMove(currentlegalMoves[i]);
+    Move move = currentlegalMoves[i];
+    short s = move.start(), t = move.target();
+    makeMove(move);
     int n = perft(depth - 1, debug);
     count += n;
     undoMove();
     if (depth == debug) {
       cout << char(s % 8 + 'a') << char(s / 8 + '1') << char(t % 8 + 'a') << char(t / 8 + '1');
-      if (currentlegalMoves[i].promotion()) cout << getChar(currentlegalMoves[i].promotion());
+      if (move.promotion()) cout << getChar(move.promotion());
       cout << ": " << n << "\n";
     }
   }
@@ -241,4 +276,22 @@ void Chess::printBitboard(ULL bitboard) {
     for (int j = 0; j < 8; ++j) cout << bool(bitboard & (1ULL << (i * 8 + j)));
     cout << "\n";
   }
+}
+
+void Chess::print() {
+  const char letters[] = {'K', 'P', 'N', 'B', 'R', 'Q'};
+  for (int row = 7; row >= 0; --row) {
+    cout << row + 1 << ' ';
+    for (int col = 0; col < 8; ++col) {
+      short p = board[row * 8 + col];
+      if ((p & PieceType) == NoPiece) {
+        cout << ((row + col + 1) % 2 ? '-' : ' ');
+      } else {
+        char Letter = letters[(p & PieceType) - 1];
+        cout << ((p & Black) ? char(Letter + 32) : Letter);
+      }
+    }
+    cout << "\n";
+  }
+  cout << "  abcdefgh\n";
 }

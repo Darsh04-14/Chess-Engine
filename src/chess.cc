@@ -4,17 +4,18 @@ void Chess::pawnAttackTable() {
   memset(pawnAttacks, 0, sizeof(pawnAttacks));
   ULL notAFile = 0, notHFile = 0;
   for (int i = 0; i < 8; ++i) {
-    notAFile |= (1 << (i * 8));
-    notHFile |= (1 << (i * 8 + 7));
+    notAFile |= (1ULL << (i * 8));
+    notHFile |= (1ULL << (i * 8 + 7));
   }
+
   notAFile = ~notAFile;
   notHFile = ~notHFile;
-  for (int i = 8; i < 56; ++i) {
-    if (i & notAFile) {
+  for (int i = 0; i < 56; ++i) {
+    if ((1ULL << i) & notAFile) {
       setBit(pawnAttacks[0][i], i + 7);
       setBit(pawnAttacks[1][i], i - 9);
     }
-    if (i & notHFile) {
+    if ((1ULL << i) & notHFile) {
       setBit(pawnAttacks[0][i], i + 9);
       setBit(pawnAttacks[1][i], i - 7);
     }
@@ -137,6 +138,12 @@ Chess::Chess(string FEN) : Chess() {
   } else {
     ++i;
   }
+
+  // cout << "Castling rights at constructor\n";
+  // for (int i = 0; i < 2; ++i) {
+  //   for (int j = 0; j < 2; ++j) cout << castlingRights[i][j] << " ";
+  //   cout << "\n";
+  // }
 
   ++i;
 

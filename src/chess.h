@@ -71,6 +71,7 @@ class Chess : public Game {
   ULL attackBitboards[2];
   ULL pinnedPieces[64];
   ULL checks[2];
+  bool enPassantPin;
 
   void genCastleMove();
   void genKingMoves();
@@ -118,7 +119,7 @@ class Chess : public Game {
   void printBitboard(ULL);  // Debugging
 
   // Internal game functions
-  void makeMove(Move);
+  void makeMove(const Move&);
   void undoMove();
 
  public:
@@ -133,6 +134,9 @@ class Chess : public Game {
   vector<short> getBoard() override;
 
   int perft(int, int = 0);  // For testing purposes
+  void print();
+
+  bool debugHelper = 0;
 };
 
 #endif

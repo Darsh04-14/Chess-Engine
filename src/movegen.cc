@@ -2,10 +2,10 @@
 
 void Chess::addMove(Move m) {
   if (pinnedPieces[m.start()] && !getBit(pinnedPieces[m.start()], m.target())) return;
+  if (m.isEnPassant() && enPassantPin) return;
 
   short offset = colourToMove == White ? -8 : 8;
   short targetSquare = m.target() + (m.isEnPassant() ? offset : 0);
-
   if (checks[0] && !checks[1] && pieceAt(board, m.start()) != King && !getBit(checks[0], targetSquare)) return;
 
   legalMoves[legalMovesLen++] = m;
@@ -17,6 +17,7 @@ void Chess::genAttacks(Colour c) {
   attackBitboards[colourInd] = 0;
   memset(pinnedPieces, 0, sizeof(pinnedPieces));
   checks[0] = checks[1] = 0;
+  enPassantPin = false;
 
   ULL enemyKingBitboard = pieceBitboards[!colourInd][King];
 
@@ -32,7 +33,8 @@ void Chess::genAttacks(Colour c) {
   }
 
   // Sliding pieces
-  ULL enemyPieces = colourBitboard(Colour(c ^ ColourType)), friendPieces = colourBitboard(c);
+  // Don't treat king piece as a blocker
+  ULL enemyPieces = colourBitboard(Colour(c ^ ColourType)) ^ enemyKingBitboard, friendPieces = colourBitboard(c);
   for (int i = 4; i <= 6; ++i) {
     ULL bitboard = pieceBitboards[colourInd][i];
     while (bitboard) {
@@ -68,19 +70,24 @@ void Chess::genAttacks(Colour c) {
 void Chess::genLegalMoves() {
   genAttacks(Colour(colourToMove ^ ColourType));
 
-  for (int i = 0; i < 2; ++i) {
-    if (checks[i]) {
-      cout << "checks[" << i << "]\n";
-      printBitboard(checks[i]);
-    }
-  }
+  // if (debugHelper) {
+  //   cout << "Board\n";
+  //   print();
 
-  for (int i = 0; i < 64; i++) {
-    if (pinnedPieces[i]) {
-      cout << "pinnedPieces[" << i << "]\n";
-      printBitboard(pinnedPieces[i]);
-    }
-  }
+  //   for (int i = 0; i < 2; ++i) {
+  //     if (checks[i]) {
+  //       cout << "checks[" << i << "]\n";
+  //       printBitboard(checks[i]);
+  //     }
+  //   }
+
+  //   for (int i = 0; i < 64; i++) {
+  //     if (pinnedPieces[i]) {
+  //       cout << "pinnedPieces[" << i << "]\n";
+  //       printBitboard(pinnedPieces[i]);
+  //     }
+  //   }
+  // }
 
   legalMovesLen = 0;
 
@@ -102,7 +109,7 @@ void Chess::genCastleMove() {
 
   if (leftCastle != -1 && rightCastle != -1) return;
 
-  short kingIndex = (colourInd ? 56 : 0) + 4;
+  short kingIndex = (colourInd == BLACK_IND ? 56 : 0) + 4;
 
   bool canCastle = true;
   ULL blockers = colourBitboard(White) | colourBitboard(Black);
@@ -169,12 +176,11 @@ void Chess::genPawnMoves() {
       // Double push
       int doublePushSquare = square + offsets[colourInd][1];
       if (!((friendBitboard | enemyBitboard) & (1ULL << doublePushSquare)) && square / 8 == startingRank)
-        addMove({square, doublePushSquare, CAPTURE, NoPiece});
+        addMove({square, doublePushSquare, DOUBLE_PAWN_PUSH, NoPiece});
     }
 
     // Captures
     ULL attackBitboard = pawnAttacks[colourInd][square] & enemyBitboard;
-
     while (attackBitboard) {
       int attackSquare = lsbIndex(attackBitboard);
 

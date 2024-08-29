@@ -1,13 +1,13 @@
 #include "engine4.h"
 
 bool Engine4::cmp::operator()(const Move& lhs, const Move& rhs) {
-  bool captureA = lhs.isCapture() || lhs.isCapturePromotion();
-  bool captureB = rhs.isCapture() || rhs.isCapturePromotion();
+  bool captureA = lhs.capture() || lhs.isCapturePromotion();
+  bool captureB = rhs.capture() || rhs.isCapturePromotion();
 
   if (!captureA || !captureB) return captureA;
 
-  int valueA = (lhs.isCapture() ? lhs.piece() : lhs.capturePromotionData) - (board[lhs.start()] & PieceType);
-  int valueB = (rhs.isCapture() ? rhs.piece() : rhs.capturePromotionData) - (board[rhs.start()] & PieceType);
+  int valueA = lhs.capture() - (board[lhs.start()] & PieceType);
+  int valueB = rhs.capture() - (board[rhs.start()] & PieceType);
 
   return valueA > valueB;
 }
