@@ -34,8 +34,6 @@ int main() {
     } else {
       cout << "Failed Test! " << nodeCount << " v " << expNodeCount << " | " << fen << "\n";
     }
-
-    // cout << nodeCount << "\n";
   }
 
   std::cout << ms_time / 1000 << "s | " << ms_time << "ms\n";

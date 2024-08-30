@@ -49,18 +49,22 @@ char Chess::getChar(Piece p) {
 }
 
 void Chess::setPiece(Colour c, Piece p, int i) {
+  if (p == NoPiece) return;
   popPiece(i);
   board[i] = c | p;
   int colourInd = colourInd(c);
-  pieceBitboards[colourInd][p] |= (1ULL << i);
+  setBit(pieceBitboards[colourInd][p], i);
+  setBit(pieceBitboards[colourInd][0], i);
 }
 
 void Chess::popPiece(int i) {
   Piece p = pieceAt(board, i);
+  if (p == NoPiece) return;
   Colour c = colourAt(board, i);
   int colourInd = colourInd(c);
   board[i] = NoPiece;
-  if (p != NoPiece) pieceBitboards[colourInd][p] ^= (1ULL << i);
+  popBit(pieceBitboards[colourInd][p], i);
+  popBit(pieceBitboards[colourInd][0], i);
 }
 
 void Chess::movePiece(int start, int target) {
@@ -73,9 +77,7 @@ void Chess::movePiece(int start, int target) {
 
 ULL Chess::colourBitboard(Colour c) {
   int colourInd = colourInd(c);
-  ULL bitboard = 0;
-  for (int i = 1; i < 7; ++i) bitboard |= pieceBitboards[colourInd][i];
-  return bitboard;
+  return pieceBitboards[colourInd][0];
 }
 
 void Chess::clearEdgeBits(short sq, ULL& mask) {

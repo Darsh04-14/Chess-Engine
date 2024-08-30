@@ -54,6 +54,10 @@ class Chess : public Game {
 
   Colour colourToMove;
 
+  // Takes Values: 0,2,4,8,16,24
+  // Correspond to game states: Game Not Over, White in Check, Black in Check, White Win, Black Win, Draw
+  short gameState;
+
   // Max number of legal moves in any position
   Move legalMoves[218];
   short legalMovesLen;
@@ -97,8 +101,6 @@ class Chess : public Game {
   void rookAttackTable();
   void kingAttackTable();
 
-  void genLegalMoves();
-
   // Utility Functions
   int countBits(ULL);
   int lsbIndex(ULL);
@@ -116,11 +118,8 @@ class Chess : public Game {
   void setCastlingRights(Move);
   void setPinsAndChecks(Colour, ULL, short);
   vector<ULL> getRayAttacks(Piece, short);
+  bool sufficientMaterial(Colour);
   void printBitboard(ULL);  // Debugging
-
-  // Internal game functions
-  void makeMove(const Move&);
-  void undoMove();
 
  public:
   Chess();
@@ -131,12 +130,26 @@ class Chess : public Game {
   bool playMove(short) override;
 
   vector<Move> getLegalMoves() override;
-  vector<short> getBoard() override;
+  const short* getBoard() override;
+
+  bool isSquareAttacked(Colour c, short);
+  Colour getCurrentPlayer();
+
+  void setGameState();
+  short end();
+  short check();
+  bool draw();
 
   int perft(int, int = 0);  // For testing purposes
   void print();
 
-  bool debugHelper = 0;
+  // Internal game functions
+  void makeMove(const Move&);
+  void undoMove();
+
+  void genLegalMoves();
+
+  ~Chess();
 };
 
 #endif

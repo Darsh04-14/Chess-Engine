@@ -66,11 +66,71 @@ void Chess::undoMove() {
 
   previousMoves.pop_back();
   colourToMove = prevColour;
+  if (gameState) gameState = 0;
 }
 
 bool Chess::playMove(string start, string target) { return false; }
 bool Chess::playMove(short start, short target) { return false; }
-bool Chess::playMove(short index) { return false; }
+bool Chess::playMove(short index) {
+  if (index < 0 || index >= legalMovesLen) return false;
 
-vector<Move> Chess::getLegalMoves() { return {}; }
-vector<short> Chess::getBoard() { return {}; }
+  makeMove(legalMoves[index]);
+  return true;
+}
+
+Colour Chess::getCurrentPlayer() { return colourToMove; }
+bool Chess::isSquareAttacked(Colour c, short square) { return getBit(pieceBitboards[colourInd(c)][0], square); }
+
+vector<Move> Chess::getLegalMoves() { return vector<Move>(legalMoves, legalMoves + legalMovesLen); }
+const short* Chess::getBoard() { return board; }
+
+bool Chess::sufficientMaterial(Colour c) {
+  int colourInd = colourInd(c);
+  bool sufficientMaterial = false;
+  if (pieceBitboards[colourInd][Pawn] || pieceBitboards[colourInd][Queen] || pieceBitboards[colourInd][Rook]) {
+    sufficientMaterial = true;
+  } else if (pieceBitboards[colourInd][Knight] && pieceBitboards[colourInd][Bishop]) {
+    sufficientMaterial = true;
+  } else if (countBits(pieceBitboards[colourInd][Knight]) > 2) {
+    sufficientMaterial = true;
+  } else if (pieceBitboards[colourInd][Bishop]) {
+    ULL bitboard = pieceBitboards[colourInd][Bishop];
+    bool squareColour = lsbIndex(bitboard) % 2;
+    while (bitboard) {
+      short square = lsbIndex(bitboard);
+      if (square % 2 != squareColour) {
+        sufficientMaterial = true;
+        break;
+      }
+      popBit(bitboard, square);
+    }
+  }
+
+  return sufficientMaterial;
+}
+
+void Chess::setGameState() {
+  int colourInd = colourInd(colourToMove);
+  short kingIndex = lsbIndex(pieceBitboards[colourInd][King]);
+  Colour enemyColour = Colour(colourToMove ^ ColourType);
+
+  bool sufficientMaterialFriend = sufficientMaterial(colourToMove),
+       sufficientMaterialEnemy = sufficientMaterial(enemyColour);
+
+  if (!sufficientMaterialFriend && !sufficientMaterialEnemy) {
+    gameState = White | Black;
+    return;
+  }
+
+  if (legalMovesLen) {
+    if (isSquareAttacked(enemyColour, kingIndex)) gameState = colourToMove >> 2;
+  } else if (isSquareAttacked(enemyColour, kingIndex)) {
+    gameState = enemyColour;
+  } else {
+    gameState = White | Black;
+  }
+}
+
+short Chess::check() { return (gameState & 6) ? (gameState << 1) : 0; }
+short Chess::end() { return (gameState & 24) ? gameState : 0; }
+bool Chess::draw() { return gameState = (White | Black); }

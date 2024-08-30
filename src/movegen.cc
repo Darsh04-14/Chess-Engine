@@ -70,25 +70,6 @@ void Chess::genAttacks(Colour c) {
 void Chess::genLegalMoves() {
   genAttacks(Colour(colourToMove ^ ColourType));
 
-  // if (debugHelper) {
-  //   cout << "Board\n";
-  //   print();
-
-  //   for (int i = 0; i < 2; ++i) {
-  //     if (checks[i]) {
-  //       cout << "checks[" << i << "]\n";
-  //       printBitboard(checks[i]);
-  //     }
-  //   }
-
-  //   for (int i = 0; i < 64; i++) {
-  //     if (pinnedPieces[i]) {
-  //       cout << "pinnedPieces[" << i << "]\n";
-  //       printBitboard(pinnedPieces[i]);
-  //     }
-  //   }
-  // }
-
   legalMovesLen = 0;
 
   if (!checks[0] || !checks[1]) {
@@ -100,6 +81,7 @@ void Chess::genLegalMoves() {
     genCastleMove();
   }
   genKingMoves();
+  setGameState();
 }
 
 void Chess::genCastleMove() {

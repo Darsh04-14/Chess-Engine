@@ -1,11 +1,6 @@
 #include "engine4.h"
 
 bool Engine4::cmp::operator()(const Move& lhs, const Move& rhs) {
-  bool captureA = lhs.capture() || lhs.isCapturePromotion();
-  bool captureB = rhs.capture() || rhs.isCapturePromotion();
-
-  if (!captureA || !captureB) return captureA;
-
   int valueA = lhs.capture() - (board[lhs.start()] & PieceType);
   int valueB = rhs.capture() - (board[rhs.start()] & PieceType);
 
@@ -18,8 +13,8 @@ bool Engine4::PairCmp::operator()(const pair<int, Move>& lhs, const pair<int, Mo
 
 int Engine4::boardEvaluation() {
   Colour c = chess->getCurrentPlayer();
-  Colour enemyColour = ~c;
-  short* board = chess->getBoard();
+  Colour enemyColour = Colour(c ^ ColourType);
+  const short* board = chess->getBoard();
 
   int score = 0;
   for (int i = 0; i < 64; ++i) {
@@ -54,7 +49,7 @@ int Engine4::boardEvaluation() {
 }
 
 int Engine4::moveEvaluation(int depth, int alpha, int beta, int moveCounter = 0) {
-  chess->generateLegalMoves();
+  chess->genLegalMoves();
   if (chess->end()) return chess->end() != (White | Black) ? (-2e6 + moveCounter) : 0;
 
   if (chess->check() && moveCounter <= MAX_DEPTH + 10) depth += 1;
@@ -72,7 +67,7 @@ int Engine4::moveEvaluation(int depth, int alpha, int beta, int moveCounter = 0)
   for (int i = 0; i < currentMoves.size(); ++i) {
     chess->makeMove(currentMoves[i]);
     valuation = max(-moveEvaluation(depth - 1, -beta, -alpha, moveCounter + 1), valuation);
-    chess->unmakeMove();
+    chess->undoMove();
     alpha = max(alpha, valuation);
     if (valuation >= beta) break;
   }
@@ -109,7 +104,7 @@ bool Engine4::notify() {
           bestMove = moves[j].second;
           alpha = value;
         }
-        chess->unmakeMove();
+        chess->undoMove();
       }
       sort(moves.begin(), moves.end(), PairCmp{});
     }
@@ -121,7 +116,7 @@ bool Engine4::notify() {
     cout << ms_double.count() << "ms\n";
 
     chess->makeMove(bestMove);
-    chess->generateLegalMoves();
+    chess->genLegalMoves();
     return true;
   } else if (cin.fail()) {
     chess->draw();
@@ -129,3 +124,5 @@ bool Engine4::notify() {
     cout << "Invalid command!\n";
   return false;
 }
+
+Engine4::~Engine4() {}

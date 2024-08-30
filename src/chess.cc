@@ -139,12 +139,6 @@ Chess::Chess(string FEN) : Chess() {
     ++i;
   }
 
-  // cout << "Castling rights at constructor\n";
-  // for (int i = 0; i < 2; ++i) {
-  //   for (int j = 0; j < 2; ++j) cout << castlingRights[i][j] << " ";
-  //   cout << "\n";
-  // }
-
   ++i;
 
   if (i < FEN.length() && FEN[i] != '-') {
@@ -158,5 +152,7 @@ Chess::Chess(string FEN) : Chess() {
     }
   }
 
-  // genLegalMoves();
+  genLegalMoves();
 }
+
+Chess::~Chess() {}

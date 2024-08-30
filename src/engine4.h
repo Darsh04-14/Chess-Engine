@@ -29,8 +29,8 @@ class Engine4 : public Player {
   int moveEvaluation(int, int, int, int);
 
   struct cmp {
-    short *board;
-    cmp(short *b) : board{b} {};
+    const short *board;
+    cmp(const short *b) : board{b} {};
     bool operator()(const Move &, const Move &);
   };
 
@@ -41,6 +41,7 @@ class Engine4 : public Player {
  public:
   Engine4(Chess *g) : Player{g} { srand(time(0)); }
   bool notify() override;
+  ~Engine4() override;
 };
 
 #endif
