@@ -112,27 +112,25 @@ const short* Chess::getBoard() { return board; }
 
 bool Chess::sufficientMaterial(Colour c) {
   int colourInd = colourInd(c);
-  bool sufficientMaterial = false;
   if (pieceBitboards[colourInd][Pawn] || pieceBitboards[colourInd][Queen] || pieceBitboards[colourInd][Rook]) {
-    sufficientMaterial = true;
+    return true;
   } else if (pieceBitboards[colourInd][Knight] && pieceBitboards[colourInd][Bishop]) {
-    sufficientMaterial = true;
+    return true;
   } else if (countBits(pieceBitboards[colourInd][Knight]) > 2) {
-    sufficientMaterial = true;
+    return true;
   } else if (pieceBitboards[colourInd][Bishop]) {
     ULL bitboard = pieceBitboards[colourInd][Bishop];
     bool squareColour = lsbIndex(bitboard) % 2;
     while (bitboard) {
       short square = lsbIndex(bitboard);
       if (square % 2 != squareColour) {
-        sufficientMaterial = true;
-        break;
+        return true;
       }
       popBit(bitboard, square);
     }
   }
 
-  return sufficientMaterial;
+  return false;
 }
 
 void Chess::setGameState() {

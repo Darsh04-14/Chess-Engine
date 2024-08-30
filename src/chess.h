@@ -101,6 +101,7 @@ class Chess : public Game {
   void rookAttackTable();
   void kingAttackTable();
 
+ public:
   // Utility Functions
   int countBits(ULL);
   int lsbIndex(ULL);
@@ -121,7 +122,6 @@ class Chess : public Game {
   bool sufficientMaterial(Colour);
   void printBitboard(ULL);  // Debugging
 
- public:
   Chess();
   Chess(string);
 

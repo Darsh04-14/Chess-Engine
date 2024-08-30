@@ -90,7 +90,7 @@ void Chess::kingAttackTable() {
   }
 }
 
-Chess::Chess() : legalMovesLen{0} {
+Chess::Chess() : gameState{0}, legalMovesLen{0} {
   memset(castlingRights, -1, sizeof(castlingRights));
   memset(board, 0, sizeof(board));
 

@@ -1,14 +1,11 @@
 #include "engine4.h"
 
 bool Engine4::cmp::operator()(const Move& lhs, const Move& rhs) {
-  int valueA = lhs.capture() - (board[lhs.start()] & PieceType);
-  int valueB = rhs.capture() - (board[rhs.start()] & PieceType);
+  if (!lhs.capture() || !rhs.capture()) return lhs.capture();
+  short valueA = pieceValue[lhs.capture()] - pieceValue[pieceAt(board, lhs.start())];
+  int valueB = pieceValue[rhs.capture()] - pieceValue[pieceAt(board, rhs.start())];
 
   return valueA > valueB;
-}
-
-bool Engine4::PairCmp::operator()(const pair<int, Move>& lhs, const pair<int, Move>& rhs) {
-  return lhs.first > rhs.first;
 }
 
 int Engine4::boardEvaluation() {
@@ -24,19 +21,19 @@ int Engine4::boardEvaluation() {
     if (piece != NoPiece) {
       if (pieceColour == c) {
         if (!chess->isSquareAttacked(enemyColour, i)) {
-          score += pieceValue[piece - 1];
+          score += pieceValue[piece];
         } else if (chess->isSquareAttacked(c, i)) {
-          score += int(pieceValue[piece - 1] / (1.4));
+          score += int(pieceValue[piece] / (1.4));
         } else {
-          score += pieceValue[piece - 1] / 4;
+          score += pieceValue[piece] / 4;
         }
       } else {
         if (!chess->isSquareAttacked(c, i)) {
-          score -= pieceValue[piece - 1];
+          score -= pieceValue[piece];
         } else if (chess->isSquareAttacked(enemyColour, i)) {
-          score -= int(pieceValue[piece - 1] / (1.6));
+          score -= int(pieceValue[piece] / (1.6));
         } else {
-          score -= pieceValue[piece - 1] / 16;
+          score -= pieceValue[piece] / 16;
         }
       }
     }
@@ -79,14 +76,16 @@ bool Engine4::notify() {
   cin >> cmd;
   if (cmd == "move") {
     auto t1 = std::chrono::high_resolution_clock::now();
+
+    nodeCount = 0;
     vector<Move> currentMoves = chess->getLegalMoves();
 
     if (!currentMoves.size()) return false;
 
     sort(currentMoves.begin(), currentMoves.end(), c);
 
-    Move bestMove;
-    int alpha;
+    Move bestMove = currentMoves[0];
+    int alpha = -2e6;
     for (int j = 0; j < currentMoves.size(); ++j) {
       chess->makeMove(currentMoves[j]);
       int value = -moveEvaluation(MAX_DEPTH, -2e6, -alpha);
