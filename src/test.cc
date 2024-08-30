@@ -12,7 +12,7 @@ int main() {
 
   string fen;
   double ms_time = 0;
-  int totalMoves = 0;
+  int totalNodes = 0;
 
   while (getline(file, fen, '\n')) {
     int depth, expNodeCount;
@@ -25,6 +25,8 @@ int main() {
     auto t1 = std::chrono::high_resolution_clock::now();
     int nodeCount = chess->perft(depth);
 
+    totalNodes += nodeCount;
+
     auto t2 = std::chrono::high_resolution_clock::now();
     chrono::duration<double, std::milli> ms_double = (t2 - t1);
     ms_time += ms_double.count();
@@ -36,5 +38,6 @@ int main() {
     }
   }
 
-  std::cout << ms_time / 1000 << "s | " << ms_time << "ms\n";
+  std::cout << "Total time: " << ms_time / 1000 << "s | " << ms_time << "ms, at "
+            << (unsigned long long)(totalNodes / (ms_time / 1000)) << " node/s\n";
 }

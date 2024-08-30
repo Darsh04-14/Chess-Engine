@@ -32,38 +32,76 @@ inline void Chess::genAttacks(Colour c) {
     }
   }
 
-  // Sliding pieces
   // Don't treat king piece as a blocker
   ULL enemyPieces = colourBitboard(Colour(c ^ ColourType)) ^ enemyKingBitboard, friendPieces = colourBitboard(c);
-  for (int i = 4; i <= 6; ++i) {
-    ULL bitboard = pieceBitboards[colourInd][i];
-    while (bitboard) {
-      short square = lsbIndex(bitboard);
-      vector<ULL> rays = getRayAttacks(Piece(i), square);
 
-      ULL mask1 = 0, mask2 = 0;
-      for (int i = 0; i < rays.size(); ++i) {
-        setPinsAndChecks(c, rays[i], square);
-        if (i < 4)
-          mask1 |= rays[i];
-        else
-          mask2 |= rays[i];
-      }
+  // Rook Attacks
+  ULL rookBitboard = pieceBitboards[colourInd][Rook];
+  while (rookBitboard) {
+    short square = lsbIndex(rookBitboard);
+    ULL vertical = ((72340172838076673ULL << square % 8) ^ (1ULL << square));
+    ULL horizontal = ((255UL << (square / 8 * 8)) ^ (1ULL << square));
+    ULL half = (1ULL << square) - 1;
+    setPinsAndChecks(c, vertical & half, square);
+    setPinsAndChecks(c, vertical & ~half, square);
+    setPinsAndChecks(c, horizontal & half, square);
+    setPinsAndChecks(c, horizontal & ~half, square);
 
-      mask1 ^= mask1 & (friendPieces | enemyPieces);
-      mask2 ^= mask2 & (friendPieces | enemyPieces);
+    ULL mask = vertical | horizontal;
+    mask ^= mask & (friendPieces | enemyPieces);
 
-      if (Piece(i) == Rook)
-        attackBitboards[colourInd] |= getRookAttack(square, mask1);
-      else if (Piece(i) == Bishop)
-        attackBitboards[colourInd] |= getBishopAttack(square, mask1);
-      else {
-        attackBitboards[colourInd] |= getRookAttack(square, mask1);
-        attackBitboards[colourInd] |= getBishopAttack(square, mask2);
-      }
+    attackBitboards[colourInd] |= getRookAttack(square, mask);
 
-      popLsb(bitboard);
-    }
+    popLsb(rookBitboard);
+  }
+
+  // Bishop Attacks
+  ULL bishopBitboard = pieceBitboards[colourInd][Bishop];
+  while (bishopBitboard) {
+    short square = lsbIndex(bishopBitboard);
+    ULL d = diagonals[square / 8 + square % 8] ^ (1ULL << square);
+    ULL rd = rdiagonals[7 - square / 8 + square % 8] ^ (1ULL << square);
+    ULL half = (1ULL << square) - 1;
+    setPinsAndChecks(c, d & half, square);
+    setPinsAndChecks(c, d & ~half, square);
+    setPinsAndChecks(c, rd & half, square);
+    setPinsAndChecks(c, rd & ~half, square);
+
+    ULL mask = d | rd;
+    mask ^= mask & (friendPieces | enemyPieces);
+
+    attackBitboards[colourInd] |= getBishopAttack(square, mask);
+
+    popLsb(bishopBitboard);
+  }
+
+  // Queen Attacks
+  ULL queenBitboard = pieceBitboards[colourInd][Queen];
+  while (queenBitboard) {
+    short square = lsbIndex(queenBitboard);
+    ULL vertical = ((72340172838076673ULL << square % 8) ^ (1ULL << square));
+    ULL horizontal = ((255UL << (square / 8 * 8)) ^ (1ULL << square));
+    ULL d = diagonals[square / 8 + square % 8] ^ (1ULL << square);
+    ULL rd = rdiagonals[7 - square / 8 + square % 8] ^ (1ULL << square);
+    ULL half = (1ULL << square) - 1;
+
+    setPinsAndChecks(c, d & half, square);
+    setPinsAndChecks(c, d & ~half, square);
+    setPinsAndChecks(c, rd & half, square);
+    setPinsAndChecks(c, rd & ~half, square);
+    setPinsAndChecks(c, vertical & half, square);
+    setPinsAndChecks(c, vertical & ~half, square);
+    setPinsAndChecks(c, horizontal & half, square);
+    setPinsAndChecks(c, horizontal & ~half, square);
+
+    ULL mask1 = d | rd, mask2 = vertical | horizontal;
+    mask1 ^= mask1 & (friendPieces | enemyPieces);
+    mask2 ^= mask2 & (friendPieces | enemyPieces);
+
+    attackBitboards[colourInd] |= getRookAttack(square, mask2);
+    attackBitboards[colourInd] |= getBishopAttack(square, mask1);
+
+    popLsb(queenBitboard);
   }
 }
 

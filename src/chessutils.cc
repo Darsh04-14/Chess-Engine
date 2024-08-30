@@ -103,7 +103,7 @@ void Chess::getAttacks(short startSquare, ULL attacks) {
   while (attacks) {
     int attackSquare = lsbIndex(attacks);
     addMove({startSquare, attackSquare, CAPTURE, pieceAt(board, attackSquare)});
-    popBit(attacks, attackSquare);
+    popLsb(attacks);
   }
 }
 
