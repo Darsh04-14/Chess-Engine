@@ -21,6 +21,7 @@ static const bool BLACK_IND = Black >> 4;
 #define setBit(bitboard, ind) ((bitboard) |= (1ULL << (ind)))
 #define getBit(bitboard, ind) ((bitboard) & (1ULL << (ind)))
 #define popBit(bitboard, ind) ((bitboard) ^= (1ULL << (ind)))
+#define popLsb(bitboard) (bitboard &= (bitboard - 1))
 #define pieceAt(board, ind) (Piece(board[ind] & PieceType))
 #define colourAt(board, ind) (Colour(board[ind] & ColourType))
 #define colourInd(c) (c == White ? WHITE_IND : BLACK_IND)
@@ -77,16 +78,16 @@ class Chess : public Game {
   ULL checks[2];
   bool enPassantPin;
 
-  void genCastleMove();
-  void genKingMoves();
-  void genPawnMoves();
-  void genKnightMoves();
-  void genRookMoves();
-  void genBishopMoves();
-  void genQueenMoves();
+  inline void genCastleMove();
+  inline void genKingMoves();
+  inline void genPawnMoves();
+  inline void genKnightMoves();
+  inline void genRookMoves();
+  inline void genBishopMoves();
+  inline void genQueenMoves();
 
   // Fills attack bitboards and pinnedPieces
-  void genAttacks(Colour);
+  inline void genAttacks(Colour);
 
   ULL kingAttacks[64];
   ULL knightAttacks[64];

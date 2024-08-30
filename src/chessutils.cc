@@ -161,6 +161,8 @@ void Chess::setCastlingRights(Move move) {
 
 // Attack should be an attack not a full movement mask
 void Chess::setPinsAndChecks(Colour c, ULL attack, short square) {
+  if (!attack) return;
+
   int colourInd = colourInd(c);
   ULL enemyKing = pieceBitboards[!colourInd][King], friendPieces = colourBitboard(c);
   ULL enemyPieces = colourBitboard(Colour(c ^ ColourType));

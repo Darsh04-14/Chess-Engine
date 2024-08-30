@@ -14,7 +14,7 @@
 #include "player.h"
 #include "types.h"
 
-#define KING_VALUE 20000
+#define KING_VALUE 0
 #define SQUARE_VALUE 63
 #define PAWN_VALUE 126
 #define KNIGHT_VALUE 781
@@ -34,6 +34,10 @@ class Engine4 : public Player {
     const short *board;
     cmp(const short *b) : board{b} {};
     bool operator()(const Move &, const Move &);
+  };
+
+  struct PairCmp {
+    bool operator()(const pair<int, Move> &, const pair<int, Move> &);
   };
 
   cmp c;

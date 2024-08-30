@@ -105,7 +105,7 @@ bool Chess::playMove(short startIndex, short targetIndex) {
 bool Chess::playMove(short index) { return false; }
 
 Colour Chess::getCurrentPlayer() { return colourToMove; }
-bool Chess::isSquareAttacked(Colour c, short square) { return getBit(pieceBitboards[colourInd(c)][0], square); }
+bool Chess::isSquareAttacked(Colour c, short square) { return getBit(attackBitboards[colourInd(c)], square); }
 
 vector<Move> Chess::getLegalMoves() { return vector<Move>(legalMoves, legalMoves + legalMovesLen); }
 const short* Chess::getBoard() { return board; }

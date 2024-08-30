@@ -8,6 +8,10 @@ bool Engine4::cmp::operator()(const Move& lhs, const Move& rhs) {
   return valueA > valueB;
 }
 
+bool Engine4::PairCmp::operator()(const pair<int, Move>& lhs, const pair<int, Move>& rhs) {
+  return lhs.first > rhs.first;
+}
+
 int Engine4::boardEvaluation() {
   Colour c = chess->getCurrentPlayer();
   Colour enemyColour = Colour(c ^ ColourType);
@@ -47,9 +51,12 @@ int Engine4::boardEvaluation() {
 
 int Engine4::moveEvaluation(int depth, int alpha, int beta, int moveCounter = 0) {
   chess->genLegalMoves();
-  if (chess->end()) return chess->end() != (White | Black) ? (-2e6 + moveCounter) : 0;
 
-  if (chess->check() && moveCounter <= MAX_DEPTH + 10) depth += 1;
+  if (chess->end()) {
+    return chess->end() != (White | Black) ? (-2e6 + moveCounter) : 0;
+  }
+
+  if (chess->check() && moveCounter <= 7 && alpha < 1e6 && beta < 1e6) depth += 1;
 
   if (!depth) {
     ++nodeCount;
@@ -77,24 +84,33 @@ bool Engine4::notify() {
   if (cmd == "move") {
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    nodeCount = 0;
     vector<Move> currentMoves = chess->getLegalMoves();
 
     if (!currentMoves.size()) return false;
 
-    sort(currentMoves.begin(), currentMoves.end(), c);
+    vector<pair<int, Move>> moves;
+    for (auto& i : currentMoves) moves.push_back({0, i});
 
-    Move bestMove = currentMoves[0];
-    int alpha = -2e6;
-    for (int j = 0; j < currentMoves.size(); ++j) {
-      chess->makeMove(currentMoves[j]);
-      int value = -moveEvaluation(MAX_DEPTH, -2e6, -alpha);
-      if (value >= alpha) {
-        bestMove = currentMoves[j];
-        alpha = value;
+    Move bestMove;
+    int alpha;
+    for (int d = 0; d <= MAX_DEPTH; ++d) {
+      nodeCount = 0;
+      bestMove = moves[0].second;
+      alpha = -2e6;
+      for (int j = 0; j < moves.size(); ++j) {
+        chess->makeMove(moves[j].second);
+        int value = -moveEvaluation(d, -2e6, -alpha);
+        moves[j].first = value;
+        if (value > alpha) {
+          bestMove = moves[j].second;
+          alpha = value;
+        }
+        chess->undoMove();
       }
-      chess->undoMove();
+      sort(moves.begin(), moves.end(), PairCmp());
     }
+
+    cout << "Best evaluation: " << alpha << " nodes searched " << nodeCount << "\n";
 
     auto t2 = std::chrono::high_resolution_clock::now();
     chrono::duration<double, std::milli> ms_double = (t2 - t1);
@@ -104,9 +120,8 @@ bool Engine4::notify() {
 
     chess->makeMove(bestMove);
     chess->genLegalMoves();
+
     return true;
-  } else if (cin.fail()) {
-    chess->draw();
   } else
     cout << "Invalid command!\n";
   return false;
