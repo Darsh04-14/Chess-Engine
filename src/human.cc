@@ -19,3 +19,5 @@ bool Human::notify() {
     return false;
   }
 }
+
+Human::~Human() {}

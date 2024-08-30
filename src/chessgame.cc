@@ -69,14 +69,40 @@ void Chess::undoMove() {
   if (gameState) gameState = 0;
 }
 
-bool Chess::playMove(string start, string target) { return false; }
-bool Chess::playMove(short start, short target) { return false; }
-bool Chess::playMove(short index) {
-  if (index < 0 || index >= legalMovesLen) return false;
+bool Chess::playMove(string start, string target) {
+  if (start.length() > 2 || target.length() > 2) return false;
+  short startSquare = (start[1] - '1') * 8 + start[0] - 'a';
+  short targetSquare = (target[1] - '1') * 8 + target[0] - 'a';
+  if (startSquare < 0 || startSquare > 63) return false;
+  if (targetSquare < 0 || targetSquare > 63) return false;
 
-  makeMove(legalMoves[index]);
-  return true;
+  return playMove(startSquare, targetSquare);
 }
+bool Chess::playMove(short startIndex, short targetIndex) {
+  for (int i = 0; i < legalMovesLen; ++i) {
+    Move move = legalMoves[i];
+    if (move.start() == startIndex && move.target() == targetIndex) {
+      if (move.promotion()) {
+        cout << "Enter which piece you want to promote to (q,n,b,r): ";
+        char p;
+        do {
+          cin >> p;
+          p = tolower(p);
+        } while (p != 'q' && p != 'n' && p != 'b' && p != 'r');
+        Piece newPiece = getPiece(p);
+        if (move.promotion()) {
+          makeMove({startIndex, targetIndex, MoveFlag::PROMOTION, newPiece});
+        }
+      } else {
+        makeMove(move);
+      }
+      genLegalMoves();
+      return true;
+    }
+  }
+  return false;
+}
+bool Chess::playMove(short index) { return false; }
 
 Colour Chess::getCurrentPlayer() { return colourToMove; }
 bool Chess::isSquareAttacked(Colour c, short square) { return getBit(pieceBitboards[colourInd(c)][0], square); }

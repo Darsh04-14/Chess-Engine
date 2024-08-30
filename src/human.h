@@ -5,9 +5,10 @@
 #include "player.h"
 
 class Human : public Player {
-   public:
-    Human(Chess *g) : Player{g} {}
-    bool notify() override;
+ public:
+  Human(Chess *g) : Player{g} {}
+  bool notify() override;
+  ~Human();
 };
 
 #endif

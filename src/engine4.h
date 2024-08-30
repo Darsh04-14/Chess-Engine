@@ -34,12 +34,14 @@ class Engine4 : public Player {
     bool operator()(const Move &, const Move &);
   };
 
+  cmp c;
+
   struct PairCmp {
     bool operator()(const pair<int, Move> &, const pair<int, Move> &);
   };
 
  public:
-  Engine4(Chess *g) : Player{g} { srand(time(0)); }
+  Engine4(Chess *g) : Player{g}, c{g->getBoard()} { srand(time(0)); }
   bool notify() override;
   ~Engine4() override;
 };

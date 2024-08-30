@@ -60,7 +60,6 @@ int Engine4::moveEvaluation(int depth, int alpha, int beta, int moveCounter = 0)
   }
 
   vector<Move> currentMoves = chess->getLegalMoves();
-  cmp c{chess->getBoard()};
   sort(currentMoves.begin(), currentMoves.end(), c);
 
   int valuation = -2e6;
@@ -84,29 +83,18 @@ bool Engine4::notify() {
 
     if (!currentMoves.size()) return false;
 
-    cmp c{chess->getBoard()};
     sort(currentMoves.begin(), currentMoves.end(), c);
-
-    vector<pair<int, Move>> moves;
-    for (auto& i : currentMoves) moves.push_back({0, i});
 
     Move bestMove;
     int alpha;
-    for (int d = MAX_DEPTH; d <= MAX_DEPTH; ++d) {
-      nodeCount = 0;
-      bestMove = moves[0].second;
-      alpha = -2e6;
-      for (int j = 0; j < moves.size(); ++j) {
-        chess->makeMove(moves[j].second);
-        int value = -moveEvaluation(d, -2e6, -alpha);
-        moves[j].first = value;
-        if (value >= alpha) {
-          bestMove = moves[j].second;
-          alpha = value;
-        }
-        chess->undoMove();
+    for (int j = 0; j < currentMoves.size(); ++j) {
+      chess->makeMove(currentMoves[j]);
+      int value = -moveEvaluation(MAX_DEPTH, -2e6, -alpha);
+      if (value >= alpha) {
+        bestMove = currentMoves[j];
+        alpha = value;
       }
-      sort(moves.begin(), moves.end(), PairCmp{});
+      chess->undoMove();
     }
 
     auto t2 = std::chrono::high_resolution_clock::now();
