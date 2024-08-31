@@ -14,27 +14,58 @@ bool Engine4::PairCmp::operator()(const pair<int, Move>& lhs, const pair<int, Mo
 
 int Engine4::boardEvaluation() {
   Colour c = chess->getCurrentPlayer();
-  Colour enemyColour = Colour(c ^ ColourType);
   const short* board = chess->getBoard();
+  ULL friendAttack = chess->attackBitboards[colourInd(c)], enemyAttack = chess->attackBitboards[!colourInd(c)];
 
   int score = 0;
+  // for (int i = 1; i < 7; ++i) {
+  //   ULL friendBitboard = chess->pieceBitboards[colourInd(c)][i];
+  //   while (friendBitboard) {
+  //     short square = chess->lsbIndex(friendBitboard);
+  //     if (!chess->isSquareAttacked(enemyColour, square)) {
+  //       score += pieceValue[i];
+  //     } else if (chess->isSquareAttacked(c, square)) {
+  //       score += int(pieceValue[i] / (1.4));
+  //     } else {
+  //       score += pieceValue[i] / 4;
+  //     }
+  //     popLsb(friendBitboard);
+  //   }
+  //   ULL enemyBitboard = chess->pieceBitboards[!colourInd(c)][i];
+  //   while (enemyBitboard) {
+  //     short square = chess->lsbIndex(enemyBitboard);
+  //     if (!chess->isSquareAttacked(c, square)) {
+  //       score -= pieceValue[i];
+  //     } else if (chess->isSquareAttacked(enemyColour, square)) {
+  //       score -= int(pieceValue[i] / (1.6));
+  //     } else {
+  //       score -= pieceValue[i] / 16;
+  //     }
+  //     popLsb(enemyBitboard);
+  //   }
+  // }
+
+  // score += (chess->countBits(chess->attackBitboards[colourInd(c)]) -
+  //           chess->countBits(chess->attackBitboards[!colourInd(c)])) *
+  //          SQUARE_VALUE;
+
   for (int i = 0; i < 64; ++i) {
     Piece piece = Piece(board[i] & PieceType);
     Colour pieceColour = Colour(board[i] & ColourType);
 
     if (piece != NoPiece) {
       if (pieceColour == c) {
-        if (!chess->isSquareAttacked(enemyColour, i)) {
+        if (!getBit(enemyAttack, i)) {
           score += pieceValue[piece];
-        } else if (chess->isSquareAttacked(c, i)) {
+        } else if (getBit(friendAttack, i)) {
           score += int(pieceValue[piece] / (1.4));
         } else {
           score += pieceValue[piece] / 4;
         }
       } else {
-        if (!chess->isSquareAttacked(c, i)) {
+        if (!getBit(friendAttack, i)) {
           score -= pieceValue[piece];
-        } else if (chess->isSquareAttacked(enemyColour, i)) {
+        } else if (getBit(enemyAttack, i)) {
           score -= int(pieceValue[piece] / (1.6));
         } else {
           score -= pieceValue[piece] / 16;
@@ -42,38 +73,41 @@ int Engine4::boardEvaluation() {
       }
     }
 
-    if (chess->isSquareAttacked(c, i)) score += SQUARE_VALUE;
-    if (chess->isSquareAttacked(enemyColour, i)) score -= SQUARE_VALUE;
+    if (getBit(friendAttack, i)) score += SQUARE_VALUE;
+    if (getBit(enemyAttack, i)) score -= SQUARE_VALUE;
   }
 
   return score;
 }
 
 int Engine4::moveEvaluation(int depth, int alpha, int beta, int moveCounter = 0) {
-  chess->genLegalMoves();
-
-  if (chess->end()) {
-    return chess->end() != (White | Black) ? (-2e6 + moveCounter) : 0;
-  }
-
-  if (chess->check() && moveCounter <= 7 && alpha < 1e6 && beta < 1e6) depth += 1;
-
   if (!depth) {
     ++nodeCount;
     return boardEvaluation();
   }
 
-  vector<Move> currentMoves = chess->getLegalMoves();
-  sort(currentMoves.begin(), currentMoves.end(), c);
+  chess->genLegalMoves();
+
+  if (chess->end()) return chess->end() != (White | Black) ? (-2e6 + moveCounter) : 0;
+  if (chess->check() && moveCounter <= 16) depth += 1;
+
+  short legalMovesLen = chess->getLegalMovesLen();
+  const Move* legalMoves = chess->getLegalMoves();
+  Move* currentMoves = new Move[legalMovesLen];
+  std::copy(legalMoves, legalMoves + legalMovesLen, currentMoves);
+  sort(currentMoves, currentMoves + legalMovesLen, c);
 
   int valuation = -2e6;
-  for (int i = 0; i < currentMoves.size(); ++i) {
+  for (int i = 0; i < legalMovesLen; ++i) {
     chess->makeMove(currentMoves[i]);
     valuation = max(-moveEvaluation(depth - 1, -beta, -alpha, moveCounter + 1), valuation);
     chess->undoMove();
     alpha = max(alpha, valuation);
     if (valuation >= beta) break;
   }
+
+  delete[] currentMoves;
+  currentMoves = nullptr;
 
   return valuation;
 }
@@ -82,24 +116,26 @@ bool Engine4::notify() {
   string cmd;
   cin >> cmd;
   if (cmd == "move") {
-    auto t1 = std::chrono::high_resolution_clock::now();
+    short legalMovesLen = chess->getLegalMovesLen();
 
-    vector<Move> currentMoves = chess->getLegalMoves();
+    if (!legalMovesLen) return false;
 
-    if (!currentMoves.size()) return false;
+    const Move* legalMoves = chess->getLegalMoves();
 
     vector<pair<int, Move>> moves;
-    for (auto& i : currentMoves) moves.push_back({0, i});
+    for (int i = 0; i < legalMovesLen; ++i) moves.push_back({0, legalMoves[i]});
 
+    auto t1 = std::chrono::high_resolution_clock::now();
     Move bestMove;
     int alpha;
-    for (int d = 0; d <= MAX_DEPTH; ++d) {
+    for (int d = 1; d <= MAX_DEPTH; ++d) {
       nodeCount = 0;
       bestMove = moves[0].second;
       alpha = -2e6;
       for (int j = 0; j < moves.size(); ++j) {
         chess->makeMove(moves[j].second);
-        int value = -moveEvaluation(d, -2e6, -alpha);
+        int searchDepth = (j >= moves.size() / 4) ? (MAX_DEPTH + 1) / 2 : MAX_DEPTH;
+        int value = -moveEvaluation(searchDepth - 1, -2e6, -alpha);
         moves[j].first = value;
         if (value > alpha) {
           bestMove = moves[j].second;
@@ -110,13 +146,11 @@ bool Engine4::notify() {
       sort(moves.begin(), moves.end(), PairCmp());
     }
 
-    cout << "Best evaluation: " << alpha << " nodes searched " << nodeCount << "\n";
-
     auto t2 = std::chrono::high_resolution_clock::now();
     chrono::duration<double, std::milli> ms_double = (t2 - t1);
 
     cout << "Best evaluation: " << alpha << " nodes searched " << nodeCount << " | ";
-    cout << ms_double.count() << "ms\n";
+    cout << ms_double.count() << "ms, at " << nodeCount / (ms_double.count() / 1000) << "node/s\n";
 
     chess->makeMove(bestMove);
     chess->genLegalMoves();

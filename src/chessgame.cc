@@ -59,10 +59,10 @@ void Chess::undoMove() {
     setPiece(prevColour, Pawn, lastMove.start());
   }
 
-  for (int i = 0; i < 2; ++i) {
-    if (castlingRights[i][0] == previousMoves.size()) castlingRights[i][0] = -1;
-    if (castlingRights[i][1] == previousMoves.size()) castlingRights[i][1] = -1;
-  }
+  if (castlingRights[0][0] == previousMoves.size()) castlingRights[0][0] = -1;
+  if (castlingRights[0][1] == previousMoves.size()) castlingRights[0][1] = -1;
+  if (castlingRights[1][0] == previousMoves.size()) castlingRights[1][0] = -1;
+  if (castlingRights[1][1] == previousMoves.size()) castlingRights[1][1] = -1;
 
   previousMoves.pop_back();
   colourToMove = prevColour;
@@ -107,7 +107,9 @@ bool Chess::playMove(short index) { return false; }
 Colour Chess::getCurrentPlayer() { return colourToMove; }
 bool Chess::isSquareAttacked(Colour c, short square) { return getBit(attackBitboards[colourInd(c)], square); }
 
-vector<Move> Chess::getLegalMoves() { return vector<Move>(legalMoves, legalMoves + legalMovesLen); }
+const Move* Chess::getLegalMoves() { return legalMoves; }
+short Chess::getLegalMovesLen() { return legalMovesLen; }
+
 const short* Chess::getBoard() { return board; }
 
 bool Chess::sufficientMaterial(Colour c) {

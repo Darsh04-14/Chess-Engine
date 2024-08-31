@@ -53,6 +53,7 @@ class Chess : public Game {
   ULL rookMagics[64];
   ULL bishopMagics[64];
 
+ public:
   Colour colourToMove;
 
   // Takes Values: 0,2,4,8,16,24
@@ -102,7 +103,6 @@ class Chess : public Game {
   void rookAttackTable();
   void kingAttackTable();
 
- public:
   // Utility Functions
   int countBits(ULL);
   int lsbIndex(ULL);
@@ -119,7 +119,6 @@ class Chess : public Game {
   ULL getPieceMoves(Colour, Piece, short);
   void setCastlingRights(Move);
   void setPinsAndChecks(Colour, ULL, short);
-  vector<ULL> getRayAttacks(Piece, short);
   bool sufficientMaterial(Colour);
   void printBitboard(ULL);  // Debugging
 
@@ -130,7 +129,8 @@ class Chess : public Game {
   bool playMove(string, string) override;
   bool playMove(short) override;
 
-  vector<Move> getLegalMoves() override;
+  const Move* getLegalMoves() override;
+  short getLegalMovesLen();
   const short* getBoard() override;
 
   bool isSquareAttacked(Colour c, short);

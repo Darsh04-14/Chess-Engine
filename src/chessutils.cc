@@ -229,9 +229,8 @@ int Chess::perft(int depth, int debug) {
 
   genLegalMoves();
 
-  Move* currentlegalMoves = new Move[312];
-
   short currentMoveLen = legalMovesLen;
+  Move* currentlegalMoves = new Move[currentMoveLen];
 
   for (int i = 0; i < legalMovesLen; ++i) {
     currentlegalMoves[i] = legalMoves[i];
@@ -240,13 +239,13 @@ int Chess::perft(int depth, int debug) {
   int count = 0;
   for (int i = 0; i < currentMoveLen; ++i) {
     Move move = currentlegalMoves[i];
-    short s = move.start(), t = move.target();
     makeMove(move);
     int n = perft(depth - 1, debug);
     count += n;
     undoMove();
     if (depth == debug) {
-      cout << char(s % 8 + 'a') << char(s / 8 + '1') << char(t % 8 + 'a') << char(t / 8 + '1');
+      cout << char(move.start() % 8 + 'a') << char(move.start() / 8 + '1') << char(move.target() % 8 + 'a')
+           << char(move.target() / 8 + '1');
       if (move.promotion()) cout << getChar(move.promotion());
       cout << ": " << n << "\n";
     }
@@ -255,24 +254,6 @@ int Chess::perft(int depth, int debug) {
   currentlegalMoves = nullptr;
 
   return count;
-}
-
-vector<ULL> Chess::getRayAttacks(Piece p, short square) {
-  if (p != Rook && p != Bishop && p != Queen) return {};
-  ULL moves[4] = {
-      ((255UL << (square / 8 * 8)) ^ (1ULL << square)),
-      ((72340172838076673ULL << square % 8) ^ (1ULL << square)),
-      (diagonals[square / 8 + square % 8] ^ (1ULL << square)),
-      (rdiagonals[7 - square / 8 + square % 8] ^ (1ULL << square)),
-  };
-  short begin = (p == Rook || p == Queen) ? 0 : 2, end = (p == Bishop || p == Queen) ? 4 : 2;
-  ULL half = (1ULL << square) - 1;
-  vector<ULL> rayAttack;
-  for (int i = begin; i < end; ++i) {
-    rayAttack.push_back(moves[i] & half);
-    rayAttack.push_back(moves[i] & ~half);
-  }
-  return rayAttack;
 }
 
 void Chess::printBitboard(ULL bitboard) {

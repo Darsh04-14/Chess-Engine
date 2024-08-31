@@ -24,7 +24,7 @@ class Game {
   virtual bool playMove(string, string) = 0;
   virtual bool playMove(short, short) = 0;
   virtual bool playMove(short) = 0;
-  virtual vector<Move> getLegalMoves() = 0;
+  virtual const Move *getLegalMoves() = 0;
   virtual const short *getBoard() = 0;
   virtual ~Game() = 0;
 };
