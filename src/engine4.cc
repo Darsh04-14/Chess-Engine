@@ -104,8 +104,7 @@ bool Engine4::notify() {
       alpha = -2e6;
       for (int j = 0; j < moves.size(); ++j) {
         chess->makeMove(moves[j].second);
-        int searchDepth = (j >= moves.size() / 4) ? (MAX_DEPTH + 1) / 2 : MAX_DEPTH;
-        int value = -moveEvaluation(searchDepth - 1, -2e6, -alpha);
+        int value = -moveEvaluation(d - 1, -2e6, -alpha);
         moves[j].first = value;
         if (value > alpha) {
           bestMove = moves[j].second;

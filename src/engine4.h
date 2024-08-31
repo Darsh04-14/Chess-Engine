@@ -15,13 +15,13 @@
 #include "types.h"
 
 #define KING_VALUE 0
-#define SQUARE_VALUE 63
+#define SQUARE_VALUE 12
 #define PAWN_VALUE 126
 #define KNIGHT_VALUE 781
 #define BISHOP_VALUE 825
 #define ROOK_VALUE 1276
 #define QUEEN_VALUE 2538
-#define MAX_DEPTH 6
+#define MAX_DEPTH 4
 
 const short pieceValue[7] = {0, KING_VALUE, PAWN_VALUE, KNIGHT_VALUE, BISHOP_VALUE, ROOK_VALUE, QUEEN_VALUE};
 
