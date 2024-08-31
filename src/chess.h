@@ -161,8 +161,9 @@ class Chess : public Game {
 inline void Chess::getAttacks(short startSquare, ULL attacks) {
   while (attacks) {
     int attackSquare = lsbIndex(attacks);
-    addMove({startSquare, attackSquare, CAPTURE, pieceAt(board, attackSquare)});
     popLsb(attacks);
+
+    addMove({startSquare, attackSquare, CAPTURE, pieceAt(board, attackSquare)});
   }
 }
 
@@ -182,7 +183,6 @@ inline void Chess::addMove(Move m) {
     short kingInd = lsbIndex(pieceBitboards[colourInd(colourToMove)][King]);
     if (getDirection(m.start(), kingInd) != getDirection(m.start(), m.target())) return;
   }
-  if (m.isEnPassant() && enPassantPin) return;
 
   short offset = colourToMove == White ? -8 : 8;
   short targetSquare = m.target() + (m.isEnPassant() ? offset : 0);

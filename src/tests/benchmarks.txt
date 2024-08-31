@@ -1,4 +1,4 @@
 Time taken to complete fenTests.in
 
 engine-v1.1 : 17.5924s | 17592ms
-engine-v2: 4.16135s | 4161.35ms
+engine-v2: 3.17689s | 3176.89ms

@@ -211,7 +211,7 @@ inline void Chess::genPawnMoves() {
 
     // En Passant
     if (previousMoves.size() && previousMoves.back().flag() == DOUBLE_PAWN_PUSH &&
-        previousMoves.back().target() / 8 == square / 8) {
+        previousMoves.back().target() / 8 == square / 8 && !enPassantPin) {
       if (previousMoves.back().target() == square - 1)
         addMove({square, square + offsets[colourInd][2], ENPASSANT, Pawn});
       if (previousMoves.back().target() == square + 1)
@@ -230,15 +230,14 @@ inline void Chess::genKnightMoves() {
 
   while (bitboard) {
     int startSquare = lsbIndex(bitboard);
-
-    if (!getBit(pinRays, startSquare)) {
-      ULL attacks = knightAttacks[startSquare];
-      attacks ^= (friendBitboard & attacks);
-
-      getAttacks(startSquare, attacks);
-    }
-
     popLsb(bitboard);
+
+    if (getBit(pinRays, startSquare)) continue;
+
+    ULL attacks = knightAttacks[startSquare];
+    attacks ^= (friendBitboard & attacks);
+
+    getAttacks(startSquare, attacks);
   }
 }
 
