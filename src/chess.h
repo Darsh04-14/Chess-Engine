@@ -64,7 +64,7 @@ class Chess : public Game {
   Move legalMoves[218];
   short legalMovesLen;
 
-  void addMove(Move);
+  inline void addMove(Move);
 
   // Keep track of previous moves for undo functionality
   std::vector<Move> previousMoves;
@@ -75,8 +75,9 @@ class Chess : public Game {
   short board[64];
   ULL pieceBitboards[2][7];
   ULL attackBitboards[2];
-  ULL pinnedPieces[64];
-  ULL checks[2];
+  ULL pinRays;
+  bool doubleCheck;
+  ULL checks;
   bool enPassantPin;
 
   inline void genCastleMove();
@@ -95,6 +96,7 @@ class Chess : public Game {
   ULL pawnAttacks[2][64];
   ULL bishopAttacks[64][512];
   ULL rookAttacks[64][4096];
+  short directionOffset[64];
 
   // Initialize attack tables for different pieces
   void pawnAttackTable();
@@ -102,20 +104,21 @@ class Chess : public Game {
   void bishopAttackTable();
   void rookAttackTable();
   void kingAttackTable();
+  void directionOffsetTable();
 
   // Utility Functions
-  int countBits(ULL);
-  int lsbIndex(ULL);
-  void setPiece(Colour, Piece, int);
-  void popPiece(int);
-  void movePiece(int, int);
+  inline int countBits(ULL);
+  inline int lsbIndex(ULL);
+  inline void setPiece(Colour, Piece, int);
+  inline void popPiece(int);
+  inline void movePiece(int, int);
+  inline short getDirection(short, short);
   Piece getPiece(char);
   char getChar(Piece);
-  ULL colourBitboard(Colour);
   void clearEdgeBits(short, ULL&);
   ULL getRookAttack(short, ULL);
   ULL getBishopAttack(short, ULL);
-  void getAttacks(short, ULL);
+  inline void getAttacks(short, ULL);
   ULL getPieceMoves(Colour, Piece, short);
   void setCastlingRights(Move);
   void setPinsAndChecks(Colour, ULL, short);
@@ -152,5 +155,81 @@ class Chess : public Game {
 
   ~Chess();
 };
+
+// Inline function definitions
+
+inline void Chess::getAttacks(short startSquare, ULL attacks) {
+  while (attacks) {
+    int attackSquare = lsbIndex(attacks);
+    addMove({startSquare, attackSquare, CAPTURE, pieceAt(board, attackSquare)});
+    popLsb(attacks);
+  }
+}
+
+inline int Chess::countBits(ULL bitboard) {
+  int cnt = 0;
+  while (bitboard) {
+    bitboard &= (bitboard - 1);
+    ++cnt;
+  }
+  return cnt;
+}
+
+inline int Chess::lsbIndex(ULL bitboard) { return bitboard ? countBits((bitboard & -bitboard) - 1) : -1; }
+
+inline void Chess::addMove(Move m) {
+  if (getBit(pinRays, m.start())) {
+    short kingInd = lsbIndex(pieceBitboards[colourInd(colourToMove)][King]);
+    if (getDirection(m.start(), kingInd) != getDirection(m.start(), m.target())) return;
+  }
+  if (m.isEnPassant() && enPassantPin) return;
+
+  short offset = colourToMove == White ? -8 : 8;
+  short targetSquare = m.target() + (m.isEnPassant() ? offset : 0);
+  if (checks && pieceAt(board, m.start()) != King && !getBit(checks, targetSquare)) return;
+
+  legalMoves[legalMovesLen++] = m;
+}
+
+inline void Chess::setPiece(Colour c, Piece p, int i) {
+  if (p == NoPiece) return;
+  popPiece(i);
+  board[i] = c | p;
+  int colourInd = colourInd(c);
+  setBit(pieceBitboards[colourInd][p], i);
+  setBit(pieceBitboards[colourInd][0], i);
+}
+
+inline void Chess::popPiece(int i) {
+  Piece p = pieceAt(board, i);
+  if (p == NoPiece) return;
+  Colour c = colourAt(board, i);
+  int colourInd = colourInd(c);
+  board[i] = NoPiece;
+  popBit(pieceBitboards[colourInd][p], i);
+  popBit(pieceBitboards[colourInd][0], i);
+}
+
+inline void Chess::movePiece(int start, int target) {
+  popPiece(target);
+  Piece p = pieceAt(board, start);
+  Colour c = colourAt(board, start);
+  setPiece(c, p, target);
+  popPiece(start);
+}
+
+inline ULL Chess::getRookAttack(short sq, ULL mask) {
+  clearEdgeBits(sq, mask);
+  int key = (mask * rookMagics[sq]) >> (64 - rookShifts[sq]);
+  return rookAttacks[sq][key];
+}
+
+inline ULL Chess::getBishopAttack(short sq, ULL mask) {
+  clearEdgeBits(sq, mask);
+  int key = (mask * bishopMagics[sq]) >> (64 - bishopShifts[sq]);
+  return bishopAttacks[sq][key];
+}
+
+inline short Chess::getDirection(short start, short target) { return directionOffset[abs(target - start)]; }
 
 #endif

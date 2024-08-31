@@ -1,16 +1,5 @@
 #include "chess.h"
 
-int Chess::countBits(ULL bitboard) {
-  int cnt = 0;
-  while (bitboard) {
-    bitboard &= (bitboard - 1);
-    ++cnt;
-  }
-  return cnt;
-}
-
-int Chess::lsbIndex(ULL bitboard) { return bitboard ? countBits((bitboard & -bitboard) - 1) : -1; }
-
 Piece Chess::getPiece(char a) {
   if (!isalpha(a)) return NoPiece;
   a = tolower(a);
@@ -48,63 +37,11 @@ char Chess::getChar(Piece p) {
     return '\0';
 }
 
-void Chess::setPiece(Colour c, Piece p, int i) {
-  if (p == NoPiece) return;
-  popPiece(i);
-  board[i] = c | p;
-  int colourInd = colourInd(c);
-  setBit(pieceBitboards[colourInd][p], i);
-  setBit(pieceBitboards[colourInd][0], i);
-}
-
-void Chess::popPiece(int i) {
-  Piece p = pieceAt(board, i);
-  if (p == NoPiece) return;
-  Colour c = colourAt(board, i);
-  int colourInd = colourInd(c);
-  board[i] = NoPiece;
-  popBit(pieceBitboards[colourInd][p], i);
-  popBit(pieceBitboards[colourInd][0], i);
-}
-
-void Chess::movePiece(int start, int target) {
-  popPiece(target);
-  Piece p = pieceAt(board, start);
-  Colour c = colourAt(board, start);
-  setPiece(c, p, target);
-  popPiece(start);
-}
-
-ULL Chess::colourBitboard(Colour c) {
-  int colourInd = colourInd(c);
-  return pieceBitboards[colourInd][0];
-}
-
 void Chess::clearEdgeBits(short sq, ULL& mask) {
   if (sq / 8) mask &= ~(255ULL);
   if (sq / 8 < 7) mask &= ~(255ULL << 56);
   if (sq % 8) mask &= ~(72340172838076673ULL);
   if (sq % 8 < 7) mask &= ~(72340172838076673ULL << 7);
-}
-
-ULL Chess::getRookAttack(short sq, ULL mask) {
-  clearEdgeBits(sq, mask);
-  int key = (mask * rookMagics[sq]) >> (64 - rookShifts[sq]);
-  return rookAttacks[sq][key];
-}
-
-ULL Chess::getBishopAttack(short sq, ULL mask) {
-  clearEdgeBits(sq, mask);
-  int key = (mask * bishopMagics[sq]) >> (64 - bishopShifts[sq]);
-  return bishopAttacks[sq][key];
-}
-
-void Chess::getAttacks(short startSquare, ULL attacks) {
-  while (attacks) {
-    int attackSquare = lsbIndex(attacks);
-    addMove({startSquare, attackSquare, CAPTURE, pieceAt(board, attackSquare)});
-    popLsb(attacks);
-  }
 }
 
 ULL Chess::getPieceMoves(Colour c, Piece p, short square) {
@@ -157,69 +94,6 @@ void Chess::setCastlingRights(Move move) {
   } else if (capturePiece == Rook && captureRow == startRank && captureCol == 7) {
     if (castlingRights[!colourInd][1] == -1) castlingRights[!colourInd][1] = previousMoves.size();
   }
-}
-
-// Attack should be an attack not a full movement mask
-void Chess::setPinsAndChecks(Colour c, ULL attack, short square) {
-  if (!attack) return;
-
-  int colourInd = colourInd(c);
-  ULL enemyKing = pieceBitboards[!colourInd][King], friendPieces = colourBitboard(c);
-  ULL enemyPieces = colourBitboard(Colour(c ^ ColourType));
-  short enemyKingSquare = lsbIndex(enemyKing);
-
-  if (!(enemyKing & attack)) return;
-
-  attack ^= enemyKing;
-
-  if (square < enemyKingSquare)
-    attack &= enemyKing - 1;
-  else
-    attack &= ~(enemyKing - 1);
-
-  if (friendPieces & attack) {
-    if (previousMoves.size()) {
-      Move lastMove = previousMoves.back();
-      ULL friendAttack = attack & friendPieces;
-      bool singleFriendBlocker = !(friendAttack & (friendAttack - 1));
-      if (lastMove.flag() == DOUBLE_PAWN_PUSH && getBit(attack, lastMove.target()) && singleFriendBlocker) {
-        short captureSquare = lastMove.target() + (c == White ? 8 : -8);
-        ULL enemyAttack = attack & enemyPieces;
-        if (enemyAttack) {
-          bool singleEnemyBlocker = !(enemyAttack & (enemyAttack - 1));
-          if (singleEnemyBlocker) {
-            short blockerInd = lsbIndex(enemyAttack);
-            bool validPawnPosition = pieceAt(board, blockerInd) == Pawn;
-            if ((lastMove.target() % 8 > 0 && blockerInd != lastMove.target() - 1) &&
-                (lastMove.target() % 8 < 7 && blockerInd != lastMove.target() + 1))
-              validPawnPosition = false;
-            if (validPawnPosition) enPassantPin = true;
-          }
-        } else if (!getBit(attack, captureSquare)) {
-          enPassantPin = true;
-        }
-      }
-    }
-    return;
-  }
-
-  setBit(attack, square);
-
-  if (!(attack & enemyPieces)) {
-    if (!checks[0])
-      checks[0] = attack;
-    else
-      checks[1] = attack;
-    return;
-  }
-
-  ULL blocker = attack & enemyPieces;
-
-  // More than one blocker
-  if (blocker & (blocker - 1)) return;
-
-  short blockerSq = lsbIndex(blocker);
-  pinnedPieces[blockerSq] = attack;
 }
 
 int Chess::perft(int depth, int debug) {
@@ -279,4 +153,66 @@ void Chess::print() {
     cout << "\n";
   }
   cout << "  abcdefgh\n";
+}
+
+// Attack should be an attack not a full movement mask
+void Chess::setPinsAndChecks(Colour c, ULL attack, short square) {
+  if (!attack) return;
+
+  int colourInd = colourInd(c);
+  ULL enemyKing = pieceBitboards[!colourInd][King], friendPieces = pieceBitboards[colourInd][0];
+  ULL enemyPieces = pieceBitboards[!colourInd][0];
+  short enemyKingSquare = lsbIndex(enemyKing);
+
+  if (!(enemyKing & attack)) return;
+
+  attack ^= enemyKing;
+
+  if (square < enemyKingSquare)
+    attack &= enemyKing - 1;
+  else
+    attack &= ~(enemyKing - 1);
+
+  if (friendPieces & attack) {
+    if (previousMoves.size()) {
+      Move lastMove = previousMoves.back();
+      ULL friendAttack = attack & friendPieces;
+      bool singleFriendBlocker = !(friendAttack & (friendAttack - 1));
+      if (lastMove.flag() == DOUBLE_PAWN_PUSH && getBit(attack, lastMove.target()) && singleFriendBlocker) {
+        short captureSquare = lastMove.target() + (c == White ? 8 : -8);
+        ULL enemyAttack = attack & enemyPieces;
+        if (enemyAttack) {
+          bool singleEnemyBlocker = !(enemyAttack & (enemyAttack - 1));
+          if (singleEnemyBlocker) {
+            short blockerInd = lsbIndex(enemyAttack);
+            bool validPawnPosition = pieceAt(board, blockerInd) == Pawn;
+            if ((lastMove.target() % 8 > 0 && blockerInd != lastMove.target() - 1) &&
+                (lastMove.target() % 8 < 7 && blockerInd != lastMove.target() + 1))
+              validPawnPosition = false;
+            if (validPawnPosition) enPassantPin = true;
+          }
+        } else if (!getBit(attack, captureSquare)) {
+          enPassantPin = true;
+        }
+      }
+    }
+    return;
+  }
+
+  setBit(attack, square);
+
+  if (!(attack & enemyPieces)) {
+    if (!checks)
+      checks = attack;
+    else
+      doubleCheck = true;
+    return;
+  }
+
+  ULL blocker = attack & enemyPieces;
+
+  // More than one blocker
+  if (blocker & (blocker - 1)) return;
+
+  pinRays |= attack;
 }

@@ -136,8 +136,6 @@ bool Chess::sufficientMaterial(Colour c) {
 }
 
 void Chess::setGameState() {
-  int colourInd = colourInd(colourToMove);
-  short kingIndex = lsbIndex(pieceBitboards[colourInd][King]);
   Colour enemyColour = Colour(colourToMove ^ ColourType);
 
   bool sufficientMaterialFriend = sufficientMaterial(colourToMove),
@@ -149,8 +147,8 @@ void Chess::setGameState() {
   }
 
   if (legalMovesLen) {
-    if (isSquareAttacked(enemyColour, kingIndex)) gameState = colourToMove >> 2;
-  } else if (isSquareAttacked(enemyColour, kingIndex)) {
+    if (checks) gameState = colourToMove >> 2;
+  } else if (checks) {
     gameState = enemyColour;
   } else {
     gameState = White | Black;

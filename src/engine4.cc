@@ -18,36 +18,6 @@ int Engine4::boardEvaluation() {
   ULL friendAttack = chess->attackBitboards[colourInd(c)], enemyAttack = chess->attackBitboards[!colourInd(c)];
 
   int score = 0;
-  // for (int i = 1; i < 7; ++i) {
-  //   ULL friendBitboard = chess->pieceBitboards[colourInd(c)][i];
-  //   while (friendBitboard) {
-  //     short square = chess->lsbIndex(friendBitboard);
-  //     if (!chess->isSquareAttacked(enemyColour, square)) {
-  //       score += pieceValue[i];
-  //     } else if (chess->isSquareAttacked(c, square)) {
-  //       score += int(pieceValue[i] / (1.4));
-  //     } else {
-  //       score += pieceValue[i] / 4;
-  //     }
-  //     popLsb(friendBitboard);
-  //   }
-  //   ULL enemyBitboard = chess->pieceBitboards[!colourInd(c)][i];
-  //   while (enemyBitboard) {
-  //     short square = chess->lsbIndex(enemyBitboard);
-  //     if (!chess->isSquareAttacked(c, square)) {
-  //       score -= pieceValue[i];
-  //     } else if (chess->isSquareAttacked(enemyColour, square)) {
-  //       score -= int(pieceValue[i] / (1.6));
-  //     } else {
-  //       score -= pieceValue[i] / 16;
-  //     }
-  //     popLsb(enemyBitboard);
-  //   }
-  // }
-
-  // score += (chess->countBits(chess->attackBitboards[colourInd(c)]) -
-  //           chess->countBits(chess->attackBitboards[!colourInd(c)])) *
-  //          SQUARE_VALUE;
 
   for (int i = 0; i < 64; ++i) {
     Piece piece = Piece(board[i] & PieceType);

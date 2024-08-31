@@ -6,7 +6,7 @@ using namespace std;
 #include "chess.h"
 
 int main() {
-  ifstream file("./tests/fenTests.in", fstream::in);
+  ifstream file("./tests/quickSuite.in", fstream::in);
 
   if (!file) cout << "Unable to open fenTests.in!\n";
 

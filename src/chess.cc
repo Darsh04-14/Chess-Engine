@@ -90,6 +90,20 @@ void Chess::kingAttackTable() {
   }
 }
 
+void Chess::directionOffsetTable() {
+  // Four directions vertical, horizontal, diagonal, rdiagonal
+  for (int i = 0; i < 64; ++i) {
+    if (!(i % 8))
+      directionOffset[i] = 0;
+    else if (!(i % 9))
+      directionOffset[i] = 2;
+    else if (!(i % 7))
+      directionOffset[i] = 3;
+    else
+      directionOffset[i] = 1;
+  }
+}
+
 Chess::Chess() : gameState{0}, legalMovesLen{0} {
   memset(castlingRights, -1, sizeof(castlingRights));
   memset(board, 0, sizeof(board));
@@ -100,6 +114,7 @@ Chess::Chess() : gameState{0}, legalMovesLen{0} {
   rookAttackTable();
   bishopAttackTable();
   kingAttackTable();
+  directionOffsetTable();
 }
 
 Chess::Chess(string FEN) : Chess() {
