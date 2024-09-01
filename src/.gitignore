@@ -1,0 +1,10 @@
+*.o
+*.d
+
+chess
+chesstest
+notes.txt
+
+cmp1.txt
+cmp2.txt
+temp.txt
