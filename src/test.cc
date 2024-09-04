@@ -5,10 +5,20 @@ using namespace std;
 
 #include "chess.h"
 
-int main() {
-  ifstream file("./tests/quickSuite.in", fstream::in);
+int main(int argc, char* argv[]) {
+  if (argc < 2) {
+    cerr << "Testsuite not given!\n";
+    exit(EXIT_FAILURE);
+  }
 
-  if (!file) cout << "Unable to open fenTests.in!\n";
+  string testSuite = argv[1];
+
+  ifstream file("./tests/" + testSuite, fstream::in);
+
+  if (!file) {
+    cerr << testSuite << " not found in " << "./tests/\n";
+    exit(EXIT_FAILURE);
+  }
 
   string fen;
   double ms_time = 0;
@@ -20,7 +30,7 @@ int main() {
 
     file.ignore(numeric_limits<streamsize>::max(), '\n');
 
-    Chess *chess = new Chess{fen};
+    Chess* chess = new Chess{fen};
 
     auto t1 = std::chrono::high_resolution_clock::now();
     int nodeCount = chess->perft(depth);
