@@ -49,6 +49,8 @@ class Chess : public Game {
       0x2010080402010000, 0x4020100804020100, 0x8040201008040201, 0x0080402010080402, 0x0000804020100804,
       0x0000008040201008, 0x0000000080402010, 0x0000000000804020, 0x0000000000008040, 0x0000000000000080,
   };
+  ULL rookMasks[64];
+  ULL bishopMasks[64];
 
   ULL rookMagics[64];
   ULL bishopMagics[64];
@@ -64,7 +66,7 @@ class Chess : public Game {
   Move legalMoves[218];
   short legalMovesLen;
 
-  inline void addMove(Move);
+  inline void addMove(const Move&);
 
   // Keep track of previous moves for undo functionality
   std::vector<Move> previousMoves;
@@ -178,7 +180,7 @@ inline int Chess::countBits(ULL bitboard) {
 
 inline int Chess::lsbIndex(ULL bitboard) { return bitboard ? countBits((bitboard & -bitboard) - 1) : -1; }
 
-inline void Chess::addMove(Move m) {
+inline void Chess::addMove(const Move& m) {
   if (getBit(pinRays, m.start())) {
     short kingInd = lsbIndex(pieceBitboards[colourInd(colourToMove)][King]);
     if (getDirection(m.start(), kingInd) != getDirection(m.start(), m.target())) return;
@@ -219,13 +221,11 @@ inline void Chess::movePiece(int start, int target) {
 }
 
 inline ULL Chess::getRookAttack(short sq, ULL mask) {
-  clearEdgeBits(sq, mask);
   int key = (mask * rookMagics[sq]) >> (64 - rookShifts[sq]);
   return rookAttacks[sq][key];
 }
 
 inline ULL Chess::getBishopAttack(short sq, ULL mask) {
-  clearEdgeBits(sq, mask);
   int key = (mask * bishopMagics[sq]) >> (64 - bishopShifts[sq]);
   return bishopAttacks[sq][key];
 }

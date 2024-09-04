@@ -1,4 +1,6 @@
-Time taken to complete fenTests.in
+Time taken to complete quickTests.in:
 
-engine-v1.1 : 17.5924s | 17592ms
-engine-v2: 3.17689s | 3176.89ms
+engine-v1.1: 17.5924s | 17592ms
+engine-v2: 0.56285s | 562.85ms
+
+Time taken to complete fullTests.in:

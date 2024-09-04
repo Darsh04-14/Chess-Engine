@@ -46,6 +46,8 @@ void Chess::rookAttackTable() {
   if (!rookAtt) std::cerr << "Could not open rook attacks!\n";
   for (int i = 0; i < 64; ++i) {
     int N;
+    rookMasks[i] = (((255UL << (i / 8 * 8)) | (72340172838076673ULL << i % 8)) ^ (1ULL << i));
+    clearEdgeBits(i, rookMasks[i]);
     rookAtt >> rookMagics[i] >> N;
     for (int j = 0; j < N; ++j) {
       ULL magicKey, magicValue;
@@ -62,6 +64,8 @@ void Chess::bishopAttackTable() {
   for (int i = 0; i < 64; ++i) {
     int N;
     bishopAtt >> bishopMagics[i] >> N;
+    bishopMasks[i] = (diagonals[i / 8 + i % 8] | rdiagonals[7 - i / 8 + i % 8]) ^ (1ULL << i);
+    clearEdgeBits(i, bishopMasks[i]);
     for (int j = 0; j < N; ++j) {
       ULL magicKey, magicValue;
       bishopAtt >> magicKey >> magicValue;
