@@ -179,7 +179,7 @@ void Chess::setPinsAndChecks(Colour c, ULL attack, short square) {
       ULL friendAttack = attack & friendPieces;
       bool singleFriendBlocker = !(friendAttack & (friendAttack - 1));
       if (lastMove.flag() == DOUBLE_PAWN_PUSH && getBit(attack, lastMove.target()) && singleFriendBlocker) {
-        short captureSquare = lastMove.target() + (c == White ? 8 : -8);
+        short captureSquare = lastMove.target() + (c == White ? -8 : 8);
         ULL enemyAttack = attack & enemyPieces;
         if (enemyAttack) {
           bool singleEnemyBlocker = !(enemyAttack & (enemyAttack - 1));
