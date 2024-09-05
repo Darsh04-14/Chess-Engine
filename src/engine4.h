@@ -14,14 +14,14 @@
 #include "player.h"
 #include "types.h"
 
-#define KING_VALUE 0
+#define KING_VALUE 10000
 #define SQUARE_VALUE 12
 #define PAWN_VALUE 126
 #define KNIGHT_VALUE 781
 #define BISHOP_VALUE 825
 #define ROOK_VALUE 1276
 #define QUEEN_VALUE 2538
-#define MAX_DEPTH 5
+#define MAX_DEPTH 7
 
 const short pieceValue[7] = {0, KING_VALUE, PAWN_VALUE, KNIGHT_VALUE, BISHOP_VALUE, ROOK_VALUE, QUEEN_VALUE};
 
@@ -29,6 +29,7 @@ class Engine4 : public Player {
   int nodeCount;
   int boardEvaluation();
   int moveEvaluation(int, int, int, int);
+  int quiescence(int, int, int = 0);
 
   struct cmp {
     const short *board;

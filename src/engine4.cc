@@ -12,40 +12,49 @@ bool Engine4::PairCmp::operator()(const pair<int, Move>& lhs, const pair<int, Mo
   return lhs.first > rhs.first;
 }
 
+int Engine4::quiescence(int alpha, int beta, int moveCounter) {
+  chess->genLegalMoves();
+  short legalMovesLen = chess->getLegalMovesLen();
+
+  int evaluation = boardEvaluation();
+
+  if (evaluation >= beta || !legalMovesLen) {
+    return evaluation;
+  }
+
+  if (evaluation > alpha) {
+    alpha = evaluation;
+  }
+
+  const Move* legalMoves = chess->getLegalMoves();
+  Move* currentMoves = new Move[legalMovesLen];
+  std::copy(legalMoves, legalMoves + legalMovesLen, currentMoves);
+  sort(currentMoves, currentMoves + legalMovesLen, c);
+
+  int valuation = -2e6;
+  for (int i = 0; i < legalMovesLen; ++i) {
+    chess->makeMove(currentMoves[i]);
+    valuation = max(-quiescence(-beta, -alpha, moveCounter + 1), valuation);
+    chess->undoMove();
+    alpha = max(alpha, valuation);
+    if (valuation >= beta) break;
+  }
+
+  delete[] currentMoves;
+  currentMoves = nullptr;
+
+  return valuation;
+}
+
 int Engine4::boardEvaluation() {
   Colour c = chess->getCurrentPlayer();
-  const short* board = chess->getBoard();
-  ULL friendAttack = chess->attackBitboards[colourInd(c)], enemyAttack = chess->attackBitboards[!colourInd(c)];
-
+  bool colourInd = colourInd(c);
+  ULL friendAttack = chess->attackBitboards[colourInd], enemyAttack = chess->attackBitboards[!colourInd];
+  ULL *friendPieces = chess->pieceBitboards[colourInd], *enemyPieces = chess->pieceBitboards[!colourInd];
   int score = 0;
+  for (int i = 1; i < 7; ++i) score += (countBits(friendPieces[i]) - countBits(enemyPieces[i])) * pieceValue[i];
 
-  for (int i = 0; i < 64; ++i) {
-    Piece piece = Piece(board[i] & PieceType);
-    Colour pieceColour = Colour(board[i] & ColourType);
-
-    if (piece != NoPiece) {
-      if (pieceColour == c) {
-        if (!getBit(enemyAttack, i)) {
-          score += pieceValue[piece];
-        } else if (getBit(friendAttack, i)) {
-          score += int(pieceValue[piece] / (1.4));
-        } else {
-          score += pieceValue[piece] / 4;
-        }
-      } else {
-        if (!getBit(friendAttack, i)) {
-          score -= pieceValue[piece];
-        } else if (getBit(enemyAttack, i)) {
-          score -= int(pieceValue[piece] / (1.6));
-        } else {
-          score -= pieceValue[piece] / 16;
-        }
-      }
-    }
-
-    if (getBit(friendAttack, i)) score += SQUARE_VALUE;
-    if (getBit(enemyAttack, i)) score -= SQUARE_VALUE;
-  }
+  score += (countBits(friendAttack) - countBits(enemyAttack)) * SQUARE_VALUE;
 
   return score;
 }
@@ -53,13 +62,16 @@ int Engine4::boardEvaluation() {
 int Engine4::moveEvaluation(int depth, int alpha, int beta, int moveCounter = 0) {
   if (!depth) {
     ++nodeCount;
-    return boardEvaluation();
+    chess->genCapturesOnly = true;
+    int eval = quiescence(alpha, beta);
+    chess->genCapturesOnly = false;
+    return eval;
   }
 
   chess->genLegalMoves();
 
-  if (chess->end()) return chess->end() != (White | Black) ? (-2e6 + moveCounter) : 0;
-  if (chess->check() && moveCounter <= 16) depth += 1;
+  if (chess->end()) return chess->end() == (White | Black) ? 0 : (-2e6 + moveCounter);
+  if (chess->check() && moveCounter <= 12) depth += 1;
 
   short legalMovesLen = chess->getLegalMovesLen();
   const Move* legalMoves = chess->getLegalMoves();

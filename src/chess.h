@@ -8,23 +8,13 @@
 
 #include "game.h"
 #include "move.h"
-
-typedef unsigned long long ULL;
+#include "utils.h"
 
 static const short ColourType = (3 << 3);
 static const short PieceType = (1 << 3) - 1;
 
 static const bool WHITE_IND = White >> 4;
 static const bool BLACK_IND = Black >> 4;
-
-// Macros for bitboards
-#define setBit(bitboard, ind) ((bitboard) |= (1ULL << (ind)))
-#define getBit(bitboard, ind) ((bitboard) & (1ULL << (ind)))
-#define popBit(bitboard, ind) ((bitboard) ^= (1ULL << (ind)))
-#define popLsb(bitboard) (bitboard &= (bitboard - 1))
-#define pieceAt(board, ind) (Piece(board[ind] & PieceType))
-#define colourAt(board, ind) (Colour(board[ind] & ColourType))
-#define colourInd(c) (c == White ? WHITE_IND : BLACK_IND)
 
 class Chess : public Game {
   static const short NUM_ROWS = 8;
@@ -61,6 +51,8 @@ class Chess : public Game {
   // Takes Values: 0,2,4,8,16,24
   // Correspond to game states: Game Not Over, White in Check, Black in Check, White Win, Black Win, Draw
   short gameState;
+
+  bool genCapturesOnly = false;
 
   // Max number of legal moves in any position
   Move legalMoves[218];
@@ -109,8 +101,6 @@ class Chess : public Game {
   void directionOffsetTable();
 
   // Utility Functions
-  inline int countBits(ULL);
-  inline int lsbIndex(ULL);
   inline void setPiece(Colour, Piece, int);
   inline void popPiece(int);
   inline void movePiece(int, int);
@@ -169,17 +159,6 @@ inline void Chess::getAttacks(short startSquare, ULL attacks) {
   }
 }
 
-inline int Chess::countBits(ULL bitboard) {
-  int cnt = 0;
-  while (bitboard) {
-    bitboard &= (bitboard - 1);
-    ++cnt;
-  }
-  return cnt;
-}
-
-inline int Chess::lsbIndex(ULL bitboard) { return bitboard ? countBits((bitboard & -bitboard) - 1) : -1; }
-
 inline void Chess::addMove(const Move& m) {
   if (getBit(pinRays, m.start())) {
     short kingInd = lsbIndex(pieceBitboards[colourInd(colourToMove)][King]);
@@ -189,6 +168,8 @@ inline void Chess::addMove(const Move& m) {
   short offset = colourToMove == White ? -8 : 8;
   short targetSquare = m.target() + (m.isEnPassant() ? offset : 0);
   if (checks && pieceAt(board, m.start()) != King && !getBit(checks, targetSquare)) return;
+
+  if (genCapturesOnly && !m.capture()) return;
 
   legalMoves[legalMovesLen++] = m;
 }

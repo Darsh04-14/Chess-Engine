@@ -156,5 +156,5 @@ void Chess::setGameState() {
 }
 
 short Chess::check() { return (gameState & 6) ? (gameState << 1) : 0; }
-short Chess::end() { return (gameState & 24) ? gameState : 0; }
+short Chess::end() { return (gameState & 24); }
 bool Chess::draw() { return gameState = (White | Black); }
