@@ -19,6 +19,7 @@ int Engine4::quiescence(int alpha, int beta, int moveCounter) {
   int evaluation = boardEvaluation();
 
   if (evaluation >= beta || !legalMovesLen) {
+    ++nodeCount;
     return evaluation;
   }
 
