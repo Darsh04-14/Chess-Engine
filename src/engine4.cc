@@ -12,7 +12,7 @@ bool Engine4::PairCmp::operator()(const pair<int, Move>& lhs, const pair<int, Mo
   return lhs.first > rhs.first;
 }
 
-int Engine4::quiescence(int alpha, int beta, int moveCounter) {
+int Engine4::quiescence(int alpha, int beta) {
   chess->genLegalMoves();
   short legalMovesLen = chess->getLegalMovesLen();
 
@@ -35,7 +35,7 @@ int Engine4::quiescence(int alpha, int beta, int moveCounter) {
   int valuation = -2e6;
   for (int i = 0; i < legalMovesLen; ++i) {
     chess->makeMove(currentMoves[i]);
-    valuation = max(-quiescence(-beta, -alpha, moveCounter + 1), valuation);
+    valuation = max(-quiescence(-beta, -alpha), valuation);
     chess->undoMove();
     alpha = max(alpha, valuation);
     if (valuation >= beta) break;

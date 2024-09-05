@@ -29,7 +29,7 @@ class Engine4 : public Player {
   int nodeCount;
   int boardEvaluation();
   int moveEvaluation(int, int, int, int);
-  int quiescence(int, int, int = 0);
+  int quiescence(int, int);
 
   struct cmp {
     const short *board;
