@@ -10,12 +10,6 @@
 #include "move.h"
 #include "utils.h"
 
-static const short ColourType = (3 << 3);
-static const short PieceType = (1 << 3) - 1;
-
-static const bool WHITE_IND = White >> 4;
-static const bool BLACK_IND = Black >> 4;
-
 class Chess : public Game {
   static const short NUM_ROWS = 8;
   static const short NUM_COLS = 8;
@@ -62,6 +56,7 @@ class Chess : public Game {
 
   // Keep track of previous moves for undo functionality
   std::vector<Move> previousMoves;
+  int ply;
 
   // Used to keep track of castling rights for each player
   short castlingRights[2][2];

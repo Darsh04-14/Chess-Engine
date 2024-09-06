@@ -15,7 +15,7 @@
 #include "types.h"
 
 #define KING_VALUE 10000
-#define SQUARE_VALUE 12
+#define SQUARE_VALUE 5
 #define PAWN_VALUE 126
 #define KNIGHT_VALUE 781
 #define BISHOP_VALUE 825
@@ -27,13 +27,21 @@ const short pieceValue[7] = {0, KING_VALUE, PAWN_VALUE, KNIGHT_VALUE, BISHOP_VAL
 
 class Engine4 : public Player {
   int nodeCount;
+  short positionScores[7][64];
   int boardEvaluation();
   int moveEvaluation(int, int, int, int);
   int quiescence(int, int);
 
   struct cmp {
     const short *board;
-    cmp(const short *b) : board{b} {};
+    Move killerMoves[246][2];
+    int historyMoves[12][64];
+
+    inline int scoreMove(const Move &);
+
+    int &ply;
+
+    cmp(const short *b, int &p) : board{b}, ply{p} {};
     bool operator()(const Move &, const Move &);
   };
 
@@ -44,7 +52,7 @@ class Engine4 : public Player {
   cmp c;
 
  public:
-  Engine4(Chess *g) : Player{g}, c{g->getBoard()} {}
+  Engine4(Chess *g);
   bool notify() override;
   ~Engine4() override;
 };

@@ -1,25 +1,65 @@
 #include "engine4.h"
 
-bool Engine4::cmp::operator()(const Move& lhs, const Move& rhs) {
-  if (!lhs.capture() || !rhs.capture()) return lhs.capture();
-  short valueA = pieceValue[lhs.capture()] - pieceValue[pieceAt(board, lhs.start())];
-  int valueB = pieceValue[rhs.capture()] - pieceValue[pieceAt(board, rhs.start())];
+Engine4::Engine4(Chess* g) : Player{g}, c{g->getBoard(), g->ply} {
+  ifstream file("./position_scores/king.txt");
 
-  return valueA > valueB;
+  for (int i = 0; i < 64; ++i) file >> positionScores[King][i];
+  file.close();
+  file.open("./position_scores/pawn.txt");
+  for (int i = 0; i < 64; ++i) file >> positionScores[Pawn][i];
+  file.close();
+  file.open("./position_scores/knight.txt");
+  for (int i = 0; i < 64; ++i) file >> positionScores[Knight][i];
+  file.close();
+  file.open("./position_scores/bishop.txt");
+  for (int i = 0; i < 64; ++i) {
+    file >> positionScores[Bishop][i];
+    positionScores[Queen][i] = positionScores[Bishop][i];
+  }
+  file.close();
+  file.open("./position_scores/rook.txt");
+  for (int i = 0; i < 64; ++i) {
+    file >> positionScores[Rook][i];
+    positionScores[Queen][i] += positionScores[Rook][i];
+  }
+
+  file.close();
 }
+
+inline int Engine4::cmp::scoreMove(const Move& move) {
+  if (move.capture()) {
+    return pieceValue[move.capture()] - pieceValue[pieceAt(board, move.start())] + 2e4;
+  }
+
+  if (killerMoves[ply][0] == move) {
+    return 9000;
+  } else if (killerMoves[ply][1] == move) {
+    return 8000;
+  } else {
+    return historyMoves[pieceNum(board, move.start())][move.target()];
+  }
+
+  return 0;
+}
+
+bool Engine4::cmp::operator()(const Move& lhs, const Move& rhs) { return scoreMove(lhs) > scoreMove(rhs); }
 
 bool Engine4::PairCmp::operator()(const pair<int, Move>& lhs, const pair<int, Move>& rhs) {
   return lhs.first > rhs.first;
 }
 
 int Engine4::quiescence(int alpha, int beta) {
+  ++nodeCount;
   chess->genLegalMoves();
   short legalMovesLen = chess->getLegalMovesLen();
 
   int evaluation = boardEvaluation();
 
-  if (evaluation >= beta || !legalMovesLen) {
-    ++nodeCount;
+  if (!legalMovesLen) {
+    return evaluation;
+  }
+
+  if (evaluation >= beta) {
     return evaluation;
   }
 
@@ -50,19 +90,34 @@ int Engine4::quiescence(int alpha, int beta) {
 int Engine4::boardEvaluation() {
   Colour c = chess->getCurrentPlayer();
   bool colourInd = colourInd(c);
-  ULL friendAttack = chess->attackBitboards[colourInd], enemyAttack = chess->attackBitboards[!colourInd];
-  ULL *friendPieces = chess->pieceBitboards[colourInd], *enemyPieces = chess->pieceBitboards[!colourInd];
+  ULL friendAttack = chess->attackBitboards[WHITE_IND], enemyAttack = chess->attackBitboards[BLACK_IND];
+  ULL *friendPieces = chess->pieceBitboards[WHITE_IND], *enemyPieces = chess->pieceBitboards[BLACK_IND];
   int score = 0;
-  for (int i = 1; i < 7; ++i) score += (countBits(friendPieces[i]) - countBits(enemyPieces[i])) * pieceValue[i];
+  for (int i = 1; i < 7; ++i) {
+    ULL bitboard = friendPieces[i];
+    while (bitboard) {
+      int square = lsbIndex(bitboard);
+      popLsb(bitboard);
+      score += pieceValue[i];
+      score += positionScores[i][square];
+    }
+    bitboard = enemyPieces[i];
+    while (bitboard) {
+      int square = lsbIndex(bitboard);
+      popLsb(bitboard);
+      score -= pieceValue[i];
+      score -= positionScores[i][8 * (7 - square / 8) + square % 8];
+    }
+  }
 
   score += (countBits(friendAttack) - countBits(enemyAttack)) * SQUARE_VALUE;
 
-  return score;
+  return colourInd ? -score : score;
 }
 
 int Engine4::moveEvaluation(int depth, int alpha, int beta, int moveCounter = 0) {
+  ++nodeCount;
   if (!depth) {
-    ++nodeCount;
     chess->genCapturesOnly = true;
     int eval = quiescence(alpha, beta);
     chess->genCapturesOnly = false;
@@ -85,8 +140,15 @@ int Engine4::moveEvaluation(int depth, int alpha, int beta, int moveCounter = 0)
     chess->makeMove(currentMoves[i]);
     valuation = max(-moveEvaluation(depth - 1, -beta, -alpha, moveCounter + 1), valuation);
     chess->undoMove();
-    alpha = max(alpha, valuation);
-    if (valuation >= beta) break;
+    if (valuation > alpha) {
+      alpha = valuation;
+      c.historyMoves[pieceNum(chess->board, currentMoves[i].start())][currentMoves[i].target()] += depth;
+    }
+    if (valuation >= beta) {
+      c.killerMoves[chess->ply][1] = c.killerMoves[chess->ply][0];
+      c.killerMoves[chess->ply][0] = currentMoves[i];
+      break;
+    }
   }
 
   delete[] currentMoves;

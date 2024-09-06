@@ -2,6 +2,7 @@
 
 void Chess::makeMove(const Move& move) {
   previousMoves.push_back(move);
+  ++ply;
 
   setCastlingRights(move);
   Colour enemyColour = Colour(colourToMove ^ ColourType);
@@ -65,6 +66,7 @@ void Chess::undoMove() {
   if (castlingRights[1][1] == previousMoves.size()) castlingRights[1][1] = -1;
 
   previousMoves.pop_back();
+  --ply;
   colourToMove = prevColour;
   if (gameState) gameState = 0;
 }
