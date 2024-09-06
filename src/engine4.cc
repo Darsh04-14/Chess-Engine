@@ -3,26 +3,35 @@
 Engine4::Engine4(Chess* g) : Player{g}, c{g->getBoard(), g->ply} {
   ifstream file("./position_scores/king.txt");
 
-  for (int i = 0; i < 64; ++i) file >> positionScores[King][i];
+  for (int i = 7; i >= 0; --i) {
+    for (int j = 0; j < 8; ++j) file >> positionScores[King][i * 8 + j];
+  }
   file.close();
   file.open("./position_scores/pawn.txt");
-  for (int i = 0; i < 64; ++i) file >> positionScores[Pawn][i];
+  for (int i = 7; i >= 0; --i) {
+    for (int j = 0; j < 8; ++j) file >> positionScores[Pawn][i * 8 + j];
+  }
   file.close();
   file.open("./position_scores/knight.txt");
-  for (int i = 0; i < 64; ++i) file >> positionScores[Knight][i];
+  for (int i = 7; i >= 0; --i) {
+    for (int j = 0; j < 8; ++j) file >> positionScores[Knight][i * 8 + j];
+  }
   file.close();
   file.open("./position_scores/bishop.txt");
-  for (int i = 0; i < 64; ++i) {
-    file >> positionScores[Bishop][i];
-    positionScores[Queen][i] = positionScores[Bishop][i];
+  for (int i = 7; i >= 0; --i) {
+    for (int j = 0; j < 8; ++j) {
+      file >> positionScores[Bishop][i * 8 + j];
+      positionScores[Queen][i * 8 + j] = positionScores[Bishop][i * 8 + j];
+    }
   }
   file.close();
   file.open("./position_scores/rook.txt");
-  for (int i = 0; i < 64; ++i) {
-    file >> positionScores[Rook][i];
-    positionScores[Queen][i] += positionScores[Rook][i];
+  for (int i = 7; i >= 0; --i) {
+    for (int j = 0; j < 8; ++j) {
+      file >> positionScores[Rook][i * 8 + j];
+      positionScores[Queen][i * 8 + j] += positionScores[Rook][i * 8 + j];
+    }
   }
-
   file.close();
 }
 
@@ -90,18 +99,18 @@ int Engine4::quiescence(int alpha, int beta) {
 int Engine4::boardEvaluation() {
   Colour c = chess->getCurrentPlayer();
   bool colourInd = colourInd(c);
-  ULL friendAttack = chess->attackBitboards[WHITE_IND], enemyAttack = chess->attackBitboards[BLACK_IND];
-  ULL *friendPieces = chess->pieceBitboards[WHITE_IND], *enemyPieces = chess->pieceBitboards[BLACK_IND];
+  ULL whiteAttack = chess->attackBitboards[WHITE_IND], blackAttack = chess->attackBitboards[BLACK_IND];
+  ULL *whitePieces = chess->pieceBitboards[WHITE_IND], *blackPieces = chess->pieceBitboards[BLACK_IND];
   int score = 0;
   for (int i = 1; i < 7; ++i) {
-    ULL bitboard = friendPieces[i];
+    ULL bitboard = whitePieces[i];
     while (bitboard) {
       int square = lsbIndex(bitboard);
       popLsb(bitboard);
       score += pieceValue[i];
       score += positionScores[i][square];
     }
-    bitboard = enemyPieces[i];
+    bitboard = blackPieces[i];
     while (bitboard) {
       int square = lsbIndex(bitboard);
       popLsb(bitboard);
@@ -110,7 +119,7 @@ int Engine4::boardEvaluation() {
     }
   }
 
-  score += (countBits(friendAttack) - countBits(enemyAttack)) * SQUARE_VALUE;
+  score += (countBits(whiteAttack) - countBits(blackAttack)) * SQUARE_VALUE;
 
   return colourInd ? -score : score;
 }
