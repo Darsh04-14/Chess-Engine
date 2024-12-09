@@ -1,4 +1,6 @@
-#pragma once
+#ifndef UTIL_H
+#define UTIL_H
+
 typedef unsigned long long ULL;
 
 static const short ColourType = (3 << 3);
@@ -27,3 +29,12 @@ inline int countBits(ULL bitboard) {
 }
 
 inline int lsbIndex(ULL bitboard) { return bitboard ? countBits((bitboard & -bitboard) - 1) : -1; }
+
+// void printBitboard(ULL bitboard) {
+//   for (int i = 7; i >= 0; --i) {
+//     for (int j = 0; j < 8; ++j) cout << bool(bitboard & (1ULL << (i * 8 + j)));
+//     cout << "\n";
+//   }
+// }
+
+#endif

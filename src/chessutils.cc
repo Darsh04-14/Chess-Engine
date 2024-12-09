@@ -130,13 +130,6 @@ int Chess::perft(int depth, int debug) {
   return count;
 }
 
-void Chess::printBitboard(ULL bitboard) {
-  for (int i = 7; i >= 0; --i) {
-    for (int j = 0; j < 8; ++j) cout << bool(bitboard & (1ULL << (i * 8 + j)));
-    cout << "\n";
-  }
-}
-
 void Chess::print() {
   const char letters[] = {'K', 'P', 'N', 'B', 'R', 'Q'};
   for (int row = 7; row >= 0; --row) {
