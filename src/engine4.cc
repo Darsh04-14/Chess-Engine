@@ -1,6 +1,6 @@
 #include "engine4.h"
 
-Engine4::Engine4(Chess* g) : Player{g}, c{g->getBoard(), g->ply} {
+Engine4::Engine4(Chess* g) : Player{g}, c{g->getBoard(), ply} {
   ifstream file("./position_scores/king.txt");
 
   for (int i = 7; i >= 0; --i) {
@@ -47,11 +47,14 @@ inline int Engine4::cmp::scoreMove(const Move& move) {
   } else {
     return historyMoves[pieceNum(board, move.start())][move.target()];
   }
-
-  return 0;
 }
 
 bool Engine4::cmp::operator()(const Move& lhs, const Move& rhs) { return scoreMove(lhs) > scoreMove(rhs); }
+
+void Engine4::cmp::clear() {
+  memset(killerMoves, 0, sizeof(killerMoves));
+  memset(historyMoves, 0, sizeof(historyMoves));
+}
 
 bool Engine4::PairCmp::operator()(const pair<int, Move>& lhs, const pair<int, Move>& rhs) {
   return lhs.first > rhs.first;
@@ -124,19 +127,22 @@ int Engine4::boardEvaluation() {
   return colourInd ? -score : score;
 }
 
-int Engine4::moveEvaluation(int depth, int alpha, int beta, int moveCounter = 0) {
+int Engine4::moveEvaluation(int depth, int alpha, int beta) {
   ++nodeCount;
+  chess->genLegalMoves();
+
+  if (chess->end()) return chess->end() == (White | Black) ? 0 : (-2e6 + ply);
+
+  if (chess->check() == chess->colourToMove) ++depth;
+
+  pvLength[ply] = ply;
+
   if (!depth) {
     chess->genCapturesOnly = true;
     int eval = quiescence(alpha, beta);
     chess->genCapturesOnly = false;
     return eval;
   }
-
-  chess->genLegalMoves();
-
-  if (chess->end()) return chess->end() == (White | Black) ? 0 : (-2e6 + moveCounter);
-  if (chess->check() && moveCounter <= 12) depth += 1;
 
   short legalMovesLen = chess->getLegalMovesLen();
   const Move* legalMoves = chess->getLegalMoves();
@@ -146,17 +152,31 @@ int Engine4::moveEvaluation(int depth, int alpha, int beta, int moveCounter = 0)
 
   int valuation = -2e6;
   for (int i = 0; i < legalMovesLen; ++i) {
+    ++ply;
     chess->makeMove(currentMoves[i]);
-    valuation = max(-moveEvaluation(depth - 1, -beta, -alpha, moveCounter + 1), valuation);
+    valuation = max(-moveEvaluation(depth - 1, -beta, -alpha), valuation);
     chess->undoMove();
+    --ply;
+    if (valuation >= beta) {
+      if (!currentMoves[i].capture()) {
+        c.killerMoves[ply][1] = c.killerMoves[ply][0];
+        c.killerMoves[ply][0] = currentMoves[i];
+      }
+      valuation = beta;
+      break;
+    }
+
     if (valuation > alpha) {
       alpha = valuation;
-      c.historyMoves[pieceNum(chess->board, currentMoves[i].start())][currentMoves[i].target()] += depth;
-    }
-    if (valuation >= beta) {
-      c.killerMoves[chess->ply][1] = c.killerMoves[chess->ply][0];
-      c.killerMoves[chess->ply][0] = currentMoves[i];
-      break;
+
+      if (!currentMoves[i].capture())
+        c.historyMoves[pieceNum(chess->board, currentMoves[i].start())][currentMoves[i].target()] += depth;
+
+      pvTable[ply][ply] = currentMoves[i];
+
+      for (int i = ply + 1; i < pvLength[ply + 1]; ++i) pvTable[ply][i] = pvTable[ply + 1][i];
+
+      pvLength[ply] = pvLength[ply + 1];
     }
   }
 
@@ -174,38 +194,31 @@ bool Engine4::notify() {
 
     if (!legalMovesLen) return false;
 
-    const Move* legalMoves = chess->getLegalMoves();
+    c.clear();
+    memset(pvTable, 0, sizeof(pvTable));
+    memset(pvLength, 0, sizeof(pvLength));
 
-    vector<pair<int, Move>> moves;
-    for (int i = 0; i < legalMovesLen; ++i) moves.push_back({0, legalMoves[i]});
+    ply = 0;
+    int evaluation = 0;
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    Move bestMove;
-    int alpha;
-    for (int d = 1; d <= MAX_DEPTH; ++d) {
-      nodeCount = 0;
-      bestMove = moves[0].second;
-      alpha = -2e6;
-      for (int j = 0; j < moves.size(); ++j) {
-        chess->makeMove(moves[j].second);
-        int value = -moveEvaluation(d - 1, -2e6, -alpha);
-        moves[j].first = value;
-        if (value > alpha) {
-          bestMove = moves[j].second;
-          alpha = value;
-        }
-        chess->undoMove();
-      }
-      sort(moves.begin(), moves.end(), PairCmp());
-    }
+
+    for (int depth = 1; depth <= MAX_DEPTH; ++depth) evaluation = moveEvaluation(depth, -2e6, 2e6);
 
     auto t2 = std::chrono::high_resolution_clock::now();
     chrono::duration<double, std::milli> ms_double = (t2 - t1);
 
-    cout << "Best evaluation: " << alpha << " nodes searched " << nodeCount << " | ";
-    cout << ms_double.count() << "ms, at " << nodeCount / (ms_double.count() / 1000) << "node/s\n";
+    cout << "Best evaluation: " << evaluation << " nodes searched " << nodeCount << " | ";
+    cout << ms_double.count() << "ms, at " << nodeCount / (ms_double.count() / 1000) << "node/s";
 
-    chess->makeMove(bestMove);
+    // cout << ", principle variation: ";
+    // for (int i = 0; i < pvLength[0]; ++i) {
+    //   Move pvMove = pvTable[0][i];
+    //   cout << "(" << pvMove.start() << " -> " << pvMove.target() << "), ";
+    // }
+    cout << "\n";
+
+    chess->makeMove(pvTable[0][0]);
     chess->genLegalMoves();
 
     return true;
