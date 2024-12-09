@@ -56,7 +56,6 @@ class Chess : public Game {
 
   // Keep track of previous moves for undo functionality
   std::vector<Move> previousMoves;
-  int ply;
 
   // Used to keep track of castling rights for each player
   short castlingRights[2][2];
@@ -110,7 +109,6 @@ class Chess : public Game {
   void setCastlingRights(Move);
   void setPinsAndChecks(Colour, ULL, short);
   bool sufficientMaterial(Colour);
-  void printBitboard(ULL);  // Debugging
 
   Chess();
   Chess(string);
