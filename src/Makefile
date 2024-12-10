@@ -2,7 +2,7 @@ CXX = g++
 CXXFLAGS = -std=c++20 -Wall -MMD -Ofast
 EXEC = chess
 TEST_EXEC = chesstest
-OBJECTS = game.o chess.o main.o movegen.o move.o chessgame.o chessutils.o engine4.o player.o human.o
+OBJECTS = game.o chess.o main.o movegen.o move.o chessgame.o chessutils.o engine4.o player.o human.o graphics.o
 TEST_OBJECTS = test.o game.o chessutils.o chess.o movegen.o move.o chessgame.o
 DEPENDS = ${OBJECTS:.o=.d} ${TEST_OBJECTS:.o=.d}
 
